@@ -1,0 +1,794 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Listos</title>
+<meta name="theme-color" content="#18233A">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Listos">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="icon-192.png">
+<style>
+:root{
+  --bg:#EEF1F4;--surface:#FFFFFF;--ink:#18233A;--muted:#5A6478;--line:#D3DAE3;
+  --signal:#E2590F;--signal-soft:#FCE5D6;--ok:#2F7A3B;--ok-soft:#DCEEDF;
+  --warn:#9A620A;--warn-soft:#F7EAD1;--danger:#BF2A1C;--danger-soft:#F8DCD8;
+  --display:"Avenir Next Condensed","Roboto Condensed","Arial Narrow","Helvetica Neue",system-ui,sans-serif;
+  --body:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  color-scheme:light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#0F141D;--surface:#182030;--ink:#E7ECF3;--muted:#9AA5B8;--line:#2B3547;
+  --signal:#FF7B33;--signal-soft:#3A2416;--ok:#6CC07A;--ok-soft:#1B3223;
+  --warn:#E6AE4E;--warn-soft:#372B14;--danger:#FF6D5E;--danger-soft:#3B1C19;
+  color-scheme:dark;
+}}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 var(--body);-webkit-text-size-adjust:100%}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:10}
+main{max-width:640px;margin:0 auto;padding:16px 16px calc(96px + env(safe-area-inset-bottom,0px))}
+h1,h2,h3{font-family:var(--display);font-stretch:condensed;line-height:1.1;margin:0}
+h2{font-size:1.6rem;font-weight:700;margin:28px 0 12px}
+h3{font-size:1.2rem;font-weight:700;margin:20px 0 8px}
+p{margin:0 0 8px}
+a{color:inherit}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--signal);outline-offset:2px}
+.muted{color:var(--muted)}
+.small{font-size:.875rem}
+
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px}
+.brand{font-family:var(--display);font-stretch:condensed;font-weight:700;font-size:1.35rem;display:flex;align-items:center;gap:8px}
+.brand svg{width:22px;height:22px}
+.call{display:inline-flex;align-items:center;gap:6px;background:var(--danger);color:#fff;text-decoration:none;font-weight:700;padding:8px 14px;border-radius:999px}
+
+/* hero: the day ruler */
+.hero{padding:20px 0 8px}
+.hero-k{color:var(--muted);margin:0 0 4px}
+.hero-n{font-size:clamp(2.6rem,12vw,4rem);font-weight:700;letter-spacing:-.01em}
+.ruler{display:grid;grid-template-columns:repeat(30,1fr);gap:3px;margin:18px 0 4px}
+.ruler i{height:34px;background:var(--surface);border:1px solid var(--line);border-radius:2px}
+.ruler i.on{background:var(--signal);border-color:var(--signal)}
+.ruler i.lvl{border-right:3px solid var(--ink)}
+.marks{display:grid;grid-template-columns:repeat(30,1fr);font-size:.8rem;color:var(--muted)}
+.marks span{justify-self:end;white-space:nowrap}
+.hero-sub{margin-top:14px}
+.limit{display:inline-block;background:var(--signal-soft);color:var(--ink);padding:2px 8px;border-radius:4px}
+
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;margin:12px 0}
+.panel.flush{padding:0;overflow:hidden}
+.row{display:flex;align-items:center;gap:10px}
+.row.between{justify-content:space-between}
+.wrap{flex-wrap:wrap}
+.grow{flex:1;min-width:0}
+
+.seg{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--surface)}
+.seg button{flex:1;border:0;background:transparent;padding:9px 6px;cursor:pointer;border-right:1px solid var(--line);font-weight:600}
+.seg button:last-child{border-right:0}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:9px 14px;cursor:pointer;font-weight:600;text-decoration:none}
+.btn.primary{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.btn.signal{background:var(--signal);color:#fff;border-color:var(--signal)}
+.btn.danger{color:var(--danger);border-color:var(--danger)}
+.btn.small{padding:6px 10px;font-size:.875rem}
+.btn.block{width:100%}
+.link{background:none;border:0;padding:0;color:var(--ink);text-decoration:underline;cursor:pointer;font-weight:600}
+
+.bar{height:8px;background:var(--bg);border-radius:4px;overflow:hidden;margin:6px 0}
+.bar i{display:block;height:100%;background:var(--ok);border-radius:4px}
+.bar.low i{background:var(--signal)}
+
+.chip{display:inline-flex;align-items:center;gap:4px;font-size:.8rem;padding:2px 8px;border-radius:4px;background:var(--bg);white-space:nowrap}
+.chip.expired{background:var(--danger-soft);color:var(--danger);font-weight:700}
+.chip.soon{background:var(--warn-soft);color:var(--warn);font-weight:700}
+.chip.rotate{background:var(--warn-soft);color:var(--ink)}
+.chip.ok{background:var(--ok-soft);color:var(--ink)}
+
+.list{list-style:none;margin:0;padding:0}
+.list>li{padding:12px 16px;border-top:1px solid var(--line)}
+.list>li:first-child{border-top:0}
+.item-name{font-weight:600}
+.batches{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.batches button{border:0;cursor:pointer}
+.cat-h{font-family:var(--display);font-stretch:condensed;font-weight:700;font-size:1.05rem;padding:10px 16px;background:var(--bg);border-top:1px solid var(--line);color:var(--muted)}
+.cat-h:first-child{border-top:0}
+
+.alert-li{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+
+.shop-li{display:grid;grid-template-columns:1fr auto;gap:4px 12px;align-items:center}
+.rec{margin:4px 0;padding:6px 8px;border-left:3px solid var(--signal);background:var(--signal-soft);border-radius:0 4px 4px 0}
+.money-big{font-family:var(--display);font-stretch:condensed;font-weight:700;font-size:2.6rem;line-height:1.1;margin:4px 0 8px}
+.mt{width:100%;border-collapse:collapse}.mt td{padding:6px 0;border-top:1px solid var(--line)}.mt td:last-child{text-align:right;font-weight:700;white-space:nowrap}
+.lv{width:100%;border-collapse:collapse;font-size:.9rem}.lv th,.lv td{padding:10px 12px;text-align:right;border-top:1px solid var(--line);white-space:nowrap}.lv th{border-top:0;color:var(--muted);font-weight:600}.lv th:first-child,.lv td:first-child{text-align:left}.lv tr.cur td{background:var(--signal-soft)}
+.price{display:flex;align-items:center;gap:4px;font-size:.875rem;color:var(--muted)}
+.price input{width:84px;padding:5px 8px;border:1px solid var(--line);border-radius:6px;background:var(--bg)}
+.week-h{display:flex;justify-content:space-between;align-items:baseline;padding:12px 16px;background:var(--bg);font-weight:700;border-top:1px solid var(--line)}
+.week-h:first-child{border-top:0}
+
+.guide-btn{display:block;width:100%;text-align:left;background:none;border:0;padding:14px 16px;cursor:pointer;border-top:1px solid var(--line)}
+.guide-btn:first-child{border-top:0}
+.guide-btn b{display:block;font-size:1.05rem}
+.guide-body ul{padding-left:20px;margin:0}
+.guide-body li{margin:0 0 8px}
+.guide-body h3:first-child{margin-top:0}
+.quick{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.quick button{text-align:left;padding:12px;border:1px solid var(--line);border-radius:8px;background:var(--surface);cursor:pointer;font-weight:600}
+
+label.f{display:block;margin:12px 0 4px;font-weight:600;font-size:.9rem}
+.inp{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--bg)}
+textarea.inp{min-height:90px;resize:vertical}
+.hint{font-size:.85rem;color:var(--muted);margin-top:4px}
+.check{display:flex;gap:10px;align-items:flex-start;padding:10px 16px;border-top:1px solid var(--line);cursor:pointer}
+.check:first-child{border-top:0}
+.check input{width:20px;height:20px;margin:2px 0 0;accent-color:var(--ok);flex:none}
+.stepper{display:flex;align-items:center;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.stepper button{border:0;background:var(--bg);width:40px;height:38px;font-size:1.2rem;cursor:pointer}
+.stepper span{min-width:40px;text-align:center;font-weight:700}
+.kid{display:grid;grid-template-columns:1fr 70px auto auto;gap:8px;align-items:center;margin-top:8px}
+.kid input[type=number]{text-align:center}
+.toggle{display:flex;align-items:center;gap:4px;font-size:.85rem;white-space:nowrap}
+
+nav.tabs{position:fixed;left:0;right:0;bottom:0;background:var(--surface);border-top:1px solid var(--line);display:flex;justify-content:center;padding-bottom:env(safe-area-inset-bottom,0px);z-index:20}
+nav.tabs .in{display:flex;width:100%;max-width:640px}
+nav.tabs button{flex:1;background:none;border:0;padding:8px 2px 10px;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:.75rem;color:var(--muted);cursor:pointer}
+nav.tabs svg{width:24px;height:24px}
+nav.tabs button[aria-current="page"]{color:var(--ink);font-weight:700}
+nav.tabs button[aria-current="page"] svg{color:var(--signal)}
+
+.sheet-bg{position:fixed;inset:0;background:rgba(10,14,22,.5);z-index:40;display:flex;align-items:flex-end;justify-content:center}
+.sheet{background:var(--surface);width:100%;max-width:640px;max-height:92vh;overflow:auto;border-radius:14px 14px 0 0;padding:20px 16px calc(20px + env(safe-area-inset-bottom,0px))}
+.sheet h2{margin-top:0}
+.toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:8px;z-index:50;max-width:90vw;text-align:center}
+.empty{text-align:center;padding:28px 16px}
+@media (prefers-reduced-motion:no-preference){
+  .ruler i.on{animation:fill .35s ease-out both}
+  @keyframes fill{from{opacity:0}to{opacity:1}}
+  .sheet{animation:up .2s ease-out}
+  @keyframes up{from{transform:translateY(30px);opacity:.5}to{transform:none;opacity:1}}
+}
+</style>
+</head>
+<body>
+<main id="main"></main>
+<nav class="tabs" aria-label="Secciones"><div class="in" id="nav"></div></nav>
+<div id="layer"></div>
+
+<script>
+"use strict";
+/* ---------- Catálogo ---------- */
+const LEVELS=[3,7,14,30];
+const CATS=[["agua","Agua"],["comida","Comida"],["ninos","Niños"],["botiquin","Botiquín"],["luz","Luz y energía"],["higiene","Higiene"],["ropa","Ropa y abrigo"],["herram","Equipo y herramientas"],["digital","Respaldo digital"],["otros","Otros"]];
+const CAT_NAME=Object.fromEntries(CATS);
+const CAT_ORDER=Object.fromEntries(CATS.map((c,i)=>[c[0],i]));
+const pp=r=>({t:"pp",r}),kid=r=>({t:"kid",r}),dia=r=>({t:"diaper",r}),fx=q=>({t:"fixed",q}),per=r=>({t:"person",r}),adu=r=>({t:"adult",r}),tb=m=>({t:"table",m}),kn=r=>({t:"kidn",r});
+function I(id,cat,name,unit,pres,rule,o){return Object.assign({id,cat,name,unit,pres,rule,minLvl:3,kcal:0,shelf:0,prio:2,note:"",rec:"",risk:"",needKids:false,needDiaper:false},o||{});}
+const CATALOG=[
+ I("agua","agua","Agua para beber","L","Garrafón de 20 L o botellas",pp(4),{shelf:6,prio:1,note:"4 litros por persona al día. Rota los garrafones cada 6 meses.",rec:"Garrafones o botellas selladas. Guárdalos lejos del sol, del piso húmedo y de químicos."}),
+ I("bomba","agua","Bomba manual para garrafón","pieza","Pieza",fx(1),{prio:2,rec:"Sin ella es difícil servir de un garrafón de 20 L."}),
+ I("desinf","agua","Desinfectante de agua (plata coloidal)","frasco","Frasco gotero",tb({3:1,30:2}),{shelf:24,prio:2,rec:"Tipo Microdyn. Usa las gotas por litro que indica el envase y espera el tiempo que marca."}),
+ I("filtro","agua","Filtro de agua portátil","pieza","Pieza",fx(1),{prio:2,rec:"De fibra hueca de 0.1 micras, tipo Sawyer Mini o LifeStraw. Quita bacterias y parásitos, no virus ni químicos: después usa desinfectante."}),
+ I("contenedor","agua","Contenedor de agua de 20 L con llave","pieza","Grado alimenticio",tb({7:1,14:2,30:3}),{minLvl:7,prio:2,rec:"Llénalo cuando haya aviso de corte de agua o huracán. Lávalo antes de llenarlo."}),
+ I("tabletas","agua","Tabletas potabilizadoras","paquete","Paquete",fx(1),{minLvl:14,shelf:36,prio:3,rec:"Compactas para la mochila de emergencia."}),
+
+ I("atun","comida","Atún en agua, lata de 140 g","lata","Lata de 140 g",pp(.5),{kcal:130,shelf:36,prio:1,rec:"Latas chicas: lo que se abre se come en esa comida, sin refrigerador."}),
+ I("pollo","comida","Pollo o sardinas en lata","lata","Lata de 140 a 155 g",pp(.25),{kcal:200,shelf:36,prio:1}),
+ I("frijol","comida","Frijoles en lata","lata","Lata de 430 g",pp(.33),{kcal:380,shelf:24,prio:1}),
+ I("galleta","comida","Galletas saladas","caja","Caja de 4 paquetes",pp(.16),{kcal:2200,shelf:6,prio:1}),
+ I("cacahuate","comida","Crema de cacahuate","frasco","Frasco de 340 g",pp(.08),{kcal:2000,shelf:12,prio:1,rec:"Mucha energía en poco espacio y no necesita refrigerarse."}),
+ I("leche","comida","Leche entera en caja","caja","Caja de 1 L",pp(.5),{kcal:620,shelf:6,prio:1}),
+ I("verdura","comida","Verduras en lata","lata","Lata de 400 g",pp(.25),{kcal:180,shelf:24}),
+ I("fruta","comida","Fruta en almíbar","lata","Lata de 820 g",pp(.16),{kcal:550,shelf:24}),
+ I("cereal","comida","Cereal","caja","Caja de 500 g",pp(.08),{kcal:1900,shelf:6}),
+ I("barra","comida","Barras de granola","pieza","Caja de 6 a 8 piezas",pp(1.15),{kcal:120,shelf:6}),
+ I("electrolitos","comida","Bebidas con electrolitos","botella","Botella de 600 mL",pp(.17),{kcal:100,shelf:12,prio:3,risk:"calor"}),
+ I("arroz","comida","Arroz","bolsa","Bolsa de 1 kg",pp(.05),{minLvl:7,kcal:3600,shelf:18,note:"Necesita agua y gas para cocinarse."}),
+ I("pasta","comida","Pasta","paquete","Paquete de 500 g",pp(.06),{minLvl:7,kcal:1750,shelf:18}),
+ I("lenteja","comida","Lentejas","bolsa","Bolsa de 500 g",pp(.04),{minLvl:7,kcal:1700,shelf:18}),
+ I("lechepolvo","comida","Leche en polvo","lata","Lata de 800 g",pp(.02),{minLvl:14,kcal:4000,shelf:12}),
+ I("pan","comida","Pan de caja","bolsa","Bolsa de 680 g",fx(1),{kcal:1750,shelf:.25,prio:3,note:"Dura poco. Cómpralo cuando haya un aviso."}),
+ I("pasas","comida","Pasas o fruta seca","bolsa","Bolsa de 200 g",pp(.08),{kcal:600,shelf:9,prio:3}),
+ I("dulces","comida","Chocolates o dulces","bolsa","Bolsa surtida",pp(.08),{kcal:800,shelf:9,prio:3,note:"Ayudan mucho al ánimo, sobre todo de los niños."}),
+ I("avena","comida","Avena","bolsa","Bolsa de 1 kg",pp(.03),{minLvl:7,kcal:3800,shelf:12,prio:3}),
+ I("aceite","comida","Aceite","botella","Botella de 1 L",tb({7:1,14:1,30:2}),{minLvl:7,shelf:12,prio:3}),
+ I("sal","comida","Sal","bolsa","Bolsa de 1 kg",tb({7:1}),{minLvl:7,prio:3}),
+ I("azucar","comida","Azúcar","bolsa","Bolsa de 1 kg",tb({7:1,14:1,30:2}),{minLvl:7,prio:3}),
+ I("cafe","comida","Café soluble o té","frasco","Frasco",tb({7:1,30:2}),{minLvl:7,shelf:18,prio:3}),
+
+ I("pure","ninos","Purés de fruta en bolsita","bolsita","Bolsita de 90 a 113 g",kid(2),{kcal:60,shelf:9,prio:1,needKids:true}),
+ I("panal","ninos","Pañales de su talla","pieza","Paquete",dia(8),{prio:1,needDiaper:true,note:"Revisa la talla en cada revisión del kit."}),
+ I("toallitas","ninos","Toallitas húmedas","paquete","Paquete de 80",dia(.5),{shelf:24,prio:1,needDiaper:true}),
+ I("tarjetanino","ninos","Tarjeta con nombre y teléfonos para cada niño","pieza","Enmicada",kn(1),{prio:1,needKids:true,rec:"Nombre del niño, de los papás y dos teléfonos. Va en su mochila o ropa."}),
+ I("galletanino","ninos","Galletas para niños","paquete","Paquete de 170 g",kid(.33),{kcal:750,shelf:6,needKids:true}),
+ I("jugo","ninos","Juguitos","pieza","De 125 a 200 mL",kid(2),{kcal:90,shelf:9,needKids:true}),
+ I("rozadura","ninos","Crema para rozaduras","tubo","Tubo",fx(1),{shelf:24,needDiaper:true}),
+ I("vasoninos","ninos","Vasos entrenadores y cubiertos de niño","kit","Kit",fx(1),{prio:3,needKids:true}),
+ I("juegos","ninos","Juguetes, libros y colores","kit","Sin pilas",fx(1),{prio:3,needKids:true,note:"Incluye su peluche o cobija favorita en la mochila."}),
+
+ I("paracetamol","botiquin","Paracetamol adultos 500 mg","caja","Caja de tabletas",fx(1),{shelf:24,prio:1}),
+ I("parainf","botiquin","Paracetamol infantil suspensión 160 mg/5 mL","frasco","Frasco con jeringa",fx(1),{shelf:24,prio:1,needKids:true,note:"La dosis depende del peso del niño. Usa la jeringa de la misma caja y no lo confundas con las gotas, que son más concentradas."}),
+ I("suero","botiquin","Suero oral","sobre","Sobre o botella",per(1),{shelf:24,prio:1}),
+ I("medsreg","botiquin","Medicamentos de uso diario de la familia","surtido","Surtido para la meta",fx(1),{shelf:12,prio:1,note:"Idealmente ten para 30 días."}),
+ I("ibuprofeno","botiquin","Ibuprofeno adultos 400 mg","caja","Caja de tabletas",fx(1),{shelf:24}),
+ I("ibuinf","botiquin","Ibuprofeno infantil suspensión 100 mg/5 mL","frasco","Frasco con jeringa",fx(1),{shelf:24,needKids:true,note:"La dosis depende del peso del niño."}),
+ I("curitas","botiquin","Curitas surtidas","caja","Caja",fx(1),{shelf:36}),
+ I("gasas","botiquin","Gasas y cinta microporo","paquete","Paquete",fx(1),{shelf:36}),
+ I("vendas","botiquin","Vendas elásticas","pieza","De 5 y 10 cm",tb({3:2,14:3}),{shelf:60}),
+ I("guantesn","botiquin","Guantes desechables de nitrilo","caja","Caja",fx(1),{shelf:36}),
+ I("tijeras","botiquin","Tijeras de botiquín y pinzas","kit","Kit",fx(1),{}),
+ I("antiseptico","botiquin","Antiséptico (yodopovidona o alcohol)","frasco","Frasco",fx(1),{shelf:24}),
+ I("salina","botiquin","Solución salina","frasco","Frasco de 250 mL",fx(1),{shelf:24,prio:3,note:"Para lavar heridas y ojos."}),
+ I("termometro","botiquin","Termómetro digital","pieza","Pieza",fx(1),{}),
+ I("antihist","botiquin","Antihistamínico adultos (loratadina 10 mg)","caja","Caja de tabletas",fx(1),{shelf:24,prio:3,note:"Para alergias. Para niños pregunta a su pediatra por la presentación infantil."}),
+ I("antidiarreico","botiquin","Antidiarreico adultos (loperamida 2 mg)","caja","Caja",fx(1),{shelf:24,prio:3,note:"Solo adultos. En niños lo importante es el suero oral."}),
+ I("antiacido","botiquin","Antiácido","caja","Caja",fx(1),{shelf:24,prio:3}),
+ I("cubrebocas","botiquin","Cubrebocas N95 o KN95","pieza","Pieza",per(2),{note:"Sirven para humo, polvo y ceniza.",rec:"Que digan N95 o KN95 y ajusten bien a la cara."}),
+ I("gotasojos","botiquin","Gotas lubricantes para ojos","frasco","Frasco",fx(1),{shelf:12,prio:3,risk:"volcan"}),
+ I("bloqueador","botiquin","Bloqueador solar y repelente","frasco","Frasco de cada uno",fx(1),{shelf:24,prio:3}),
+ I("oximetro","botiquin","Oxímetro de pulso","pieza","Pieza",fx(1),{minLvl:7,prio:3}),
+ I("manualpa","botiquin","Manual impreso de primeros auxilios","pieza","Impreso",fx(1),{minLvl:7,prio:3,rec:"Por si no hay internet. La Cruz Roja publica guías gratuitas."}),
+
+ I("linterna","luz","Linterna LED","pieza","Una por adulto",adu(1),{prio:1,rec:"LED de 200 lúmenes o más, resistente al agua, con pilas AA para que todo use las mismas."}),
+ I("pilasaa","luz","Pilas AA","paquete","Paquete de 4",tb({3:2,7:3,14:4,30:6}),{shelf:60,prio:1,rec:"Alcalinas o de litio, que duran más guardadas. Revisa la fecha del empaque."}),
+ I("powerbank","luz","Power bank","pieza","10,000 mAh o más",fx(1),{prio:1,note:"Cárgalo cada mes.",rec:"De 10,000 mAh como mínimo; 20,000 si son varios celulares."}),
+ I("frontal","luz","Lámpara de cabeza (frontal)","pieza","Una por adulto",adu(1),{prio:2,rec:"Deja las manos libres para cargar a los niños. Que use pilas AA o AAA."}),
+ I("lampara","luz","Lámpara de pilas para mesa","pieza","Pieza",fx(1),{rec:"Ilumina todo el cuarto; tranquiliza a los niños de noche."}),
+ I("pilasaaa","luz","Pilas AAA","paquete","Paquete de 4",tb({3:1,7:2,14:2,30:3}),{shelf:60}),
+ I("radio","luz","Radio de pilas o de manivela","pieza","Pieza",fx(1),{rec:"AM/FM con manivela o panel solar, idealmente con puerto USB para cargar el celular."}),
+ I("manivela","luz","Linterna de manivela o solar","pieza","Pieza",fx(1),{rec:"No depende de pilas. Ideal como respaldo."}),
+ I("cables","luz","Cables de carga de repuesto","kit","Uno por tipo de celular",fx(1),{}),
+ I("cargauto","luz","Cargador USB para el auto","pieza","Pieza",fx(1),{rec:"El auto puede cargar celulares si no hay luz."}),
+ I("panelsolar","luz","Panel solar plegable USB","pieza","20 W o más",fx(1),{minLvl:7,rec:"Para cargar celulares y power banks durante apagones largos."}),
+ I("estufa","luz","Estufa portátil de butano","pieza","Pieza",fx(1),{minLvl:7,note:"Úsala solo en exteriores o con buena ventilación.",rec:"De un quemador con cartucho. Nunca dentro de un cuarto cerrado."}),
+ I("butano","luz","Cartuchos de gas butano","pieza","Pieza",tb({7:2,14:4,30:8}),{minLvl:7}),
+ I("ventilador","luz","Ventilador de pilas o USB","pieza","Pieza",fx(1),{prio:3,risk:"calor"}),
+ I("estacion","luz","Estación de energía portátil","pieza","300 Wh o más",fx(1),{minLvl:14,prio:3,rec:"Batería grande para luz, celulares, módem o un ventilador. Es la compra más cara: déjala para el final."}),
+
+ I("papel","higiene","Papel higiénico","rollo","Paquete de rollos",pp(.5),{prio:1}),
+ I("gel","higiene","Gel antibacterial","frasco","Frasco grande",tb({3:1,7:1,14:2,30:4}),{shelf:24}),
+ I("jabon","higiene","Jabón de barra","barra","Barra",tb({3:2,7:2,14:4,30:6}),{}),
+ I("basura","higiene","Bolsas de basura grandes","rollo","Rollo",tb({3:1,7:1,14:2,30:3}),{}),
+ I("banio","higiene","Bolsas para baño de emergencia","paquete","Paquete",tb({3:1,7:1,14:2,30:3}),{prio:2,rec:"Si no hay agua para el inodoro: bolsa gruesa dentro del inodoro o de una cubeta, con un poco de cal o arena para gato, y bien cerrada."}),
+ I("cloro","higiene","Cloro sin aroma","botella","Botella de 1 L",tb({3:1,30:2}),{shelf:12,rec:"Para desinfectar superficies. Pierde fuerza con el tiempo: cámbialo cada año."}),
+ I("toallasan","higiene","Toallas sanitarias","paquete","Paquete",tb({3:1,14:2,30:3}),{shelf:36,prio:3}),
+ I("dental","higiene","Cepillos y pasta de dientes","kit","Uno por persona",fx(1),{prio:3}),
+ I("toallasad","higiene","Toallas húmedas para adultos","paquete","Paquete",tb({3:1,7:2,14:3,30:5}),{shelf:24,prio:3,note:"Para asearse cuando no hay agua."}),
+ I("desech","higiene","Platos, vasos y cubiertos desechables","paquete","Paquete",tb({3:1,7:2,14:3,30:5}),{prio:3,note:"Ahorran agua."}),
+ I("cubeta","higiene","Cubeta de 19 L con tapa","pieza","Pieza",fx(1),{prio:3}),
+
+ I("ropa","ropa","Muda de ropa extra por persona","kit","Una por persona",per(1),{prio:2,note:"Revisa las tallas de los niños cada 6 meses."}),
+ I("zapatos","ropa","Zapatos cerrados junto a cada cama","par","Uno por persona",per(1),{prio:2,rec:"Para salir de noche entre vidrios rotos después de un sismo."}),
+ I("cobija","ropa","Cobijas","pieza","Una por persona",per(1),{prio:2}),
+ I("impermeable","ropa","Impermeable o poncho","pieza","Uno por persona",per(1),{prio:3,risk:"huracan"}),
+ I("abrigo","ropa","Ropa térmica o chamarra gruesa","pieza","Una por persona",per(1),{prio:3,risk:"frio"}),
+
+ I("mochila","herram","Mochila de emergencia","pieza","Una por familia",fx(1),{prio:1,rec:"Resistente y con cierre. Si pueden, una pequeña más por adulto."}),
+ I("bolsadoc","herram","Bolsa impermeable para documentos","pieza","Pieza",fx(1),{prio:1}),
+ I("llave","herram","Llave inglesa para cerrar gas y agua","pieza","Pieza",fx(1),{prio:1,rec:"Déjala junto a la llave de paso del gas."}),
+ I("abrelatas","herram","Abrelatas manual","pieza","Pieza",fx(1),{prio:1}),
+ I("detectorco","herram","Detector de monóxido de carbono","pieza","De pilas",fx(1),{prio:2,rec:"Indispensable si algún día usan estufa portátil, calentador o generador."}),
+ I("detectorhumo","herram","Detector de humo","pieza","Uno por piso",fx(1),{prio:2}),
+ I("extintor","herram","Extintor PQS","pieza","De 4.5 kg",fx(1),{shelf:12,note:"Revísalo o recárgalo cada año.",rec:"Polvo químico seco tipo ABC. Ponlo cerca de la cocina, no junto a la estufa."}),
+ I("silbato","herram","Silbato","pieza","Uno por persona",per(1),{rec:"Para pedir ayuda si alguien queda atrapado. Se escucha más que la voz."}),
+ I("encendedor","herram","Encendedor","pieza","Pieza",fx(1),{}),
+ I("guantest","herram","Guantes de trabajo","par","Uno por adulto",adu(1),{prio:3}),
+ I("lentes","herram","Lentes de seguridad","pieza","Uno por adulto",adu(1),{prio:3,note:"Para polvo, escombro y ceniza."}),
+ I("cinta","herram","Cinta gris (duct tape)","rollo","Rollo",fx(1),{prio:3}),
+ I("ziploc","herram","Bolsas ziploc grandes","caja","Caja",fx(1),{prio:3,note:"Para medicinas y celulares."}),
+ I("marcador","herram","Marcador permanente y libreta","kit","Kit",fx(1),{prio:3}),
+ I("mapa","herram","Mapa impreso de tu ciudad","pieza","Impreso",fx(1),{prio:3,note:"Por si no hay GPS ni datos."}),
+ I("navaja","herram","Navaja multiusos","pieza","Pieza",fx(1),{minLvl:7,prio:3}),
+ I("manta","herram","Mantas térmicas de emergencia","pieza","Una por persona",per(1),{minLvl:7,prio:3}),
+ I("cuerda","herram","Cuerda de 15 m","pieza","Pieza",fx(1),{minLvl:7,prio:3}),
+ I("lona","herram","Lona o plástico grueso","pieza","Pieza",fx(1),{minLvl:7,prio:3,note:"Para tapar ventanas rotas o goteras."}),
+ I("walkie","herram","Radios de comunicación (walkie-talkie)","par","Par",fx(1),{minLvl:7,prio:3,rec:"Para la familia si cae la red celular. El alcance real suele ser de 1 a 3 km."}),
+ I("costales","herram","Costales para arena","pieza","Pieza",tb({7:10}),{minLvl:7,prio:3,risk:"inundacion"}),
+ I("triplay","herram","Tablas o triplay para ventanas","pieza","A la medida",fx(1),{minLvl:7,prio:3,risk:"huracan"}),
+ I("pala","herram","Pala plegable","pieza","Pieza",fx(1),{minLvl:14,prio:3}),
+
+ I("impresos","digital","Contactos y datos clave impresos","kit","Hoja en bolsa impermeable",fx(1),{prio:1,rec:"Teléfonos, números de pólizas, del banco y del pediatra, en papel."}),
+ I("usb","digital","Memoria USB con copia de documentos","pieza","Con contraseña",fx(1),{prio:2,rec:"Escanea identificaciones, actas, pólizas, recetas y escrituras. Protégela con contraseña."}),
+ I("codigos","digital","Códigos de respaldo impresos","kit","Hoja guardada",fx(1),{prio:2,rec:"Los códigos de recuperación de tu correo, banco y gestor de contraseñas, por si pierdes el celular."}),
+ I("disco","digital","Disco duro externo de respaldo","pieza","1 TB o más",fx(1),{minLvl:7,prio:3,rec:"Respaldo de fotos y documentos. Guárdalo desconectado para protegerlo de virus."}),
+ I("celbasico","digital","Celular básico de respaldo con chip","pieza","Pieza",fx(1),{minLvl:14,prio:3,rec:"La batería dura días. Útil si se pierde o se daña el celular principal."})
+];
+const BY_ID=Object.fromEntries(CATALOG.map(i=>[i.id,i]));
+const DEF_PRICE={agua:2.5,bomba:120,desinf:35,filtro:700,contenedor:250,tabletas:200,atun:22,pollo:45,frijol:28,galleta:55,cacahuate:75,leche:28,verdura:25,fruta:55,cereal:70,barra:10,electrolitos:25,arroz:35,pasta:18,lenteja:30,lechepolvo:200,pan:55,pasas:45,dulces:80,avena:45,aceite:50,sal:15,azucar:35,cafe:90,pure:22,panal:6,toallitas:60,tarjetanino:20,galletanino:25,jugo:10,rozadura:90,vasoninos:150,juegos:200,paracetamol:40,parainf:80,suero:25,ibuprofeno:50,ibuinf:90,curitas:45,gasas:60,vendas:35,guantesn:120,tijeras:120,antiseptico:50,salina:35,termometro:120,antihist:60,antidiarreico:50,antiacido:50,cubrebocas:20,gotasojos:120,bloqueador:250,oximetro:300,manualpa:20,linterna:200,pilasaa:90,powerbank:450,frontal:220,lampara:250,pilasaaa:90,radio:450,manivela:350,cables:150,cargauto:150,panelsolar:900,estufa:600,butano:45,ventilador:300,estacion:6000,papel:9,gel:80,jabon:20,basura:45,banio:150,cloro:25,toallasan:45,dental:120,toallasad:50,desech:80,cubeta:90,ropa:0,zapatos:0,cobija:0,impermeable:120,abrigo:400,mochila:600,bolsadoc:150,llave:180,abrelatas:80,detectorco:600,detectorhumo:250,extintor:600,silbato:30,encendedor:20,guantest:80,lentes:70,cinta:90,ziploc:70,marcador:60,mapa:50,navaja:300,manta:50,cuerda:150,lona:200,walkie:900,costales:15,triplay:500,pala:350,impresos:20,usb:150,codigos:0,disco:1300,celbasico:700};
+
+const PL={par:"pares",lata:"latas",caja:"cajas",pieza:"piezas",frasco:"frascos",bolsa:"bolsas",paquete:"paquetes",rollo:"rollos",sobre:"sobres",bolsita:"bolsitas",barra:"barras",botella:"botellas",tubo:"tubos",kit:"kits",surtido:"surtidos",L:"L",kg:"kg",unidad:"unidades"};
+const fu=(n,u)=>(Number(n)===1?u:(PL[u]||u+"s"));
+const fmtN=n=>{n=Number(n)||0;return Number.isInteger(n)?String(n):n.toLocaleString("es-MX",{maximumFractionDigits:1})};
+
+/* ---------- Guías ---------- */
+const GUIDES=[
+ {id:"sismo",t:"Sismo",s:"Agáchate, cúbrete y sujétate.",b:[
+  ["Antes",["Ubica en cada cuarto un lugar seguro: lejos de ventanas, junto a un muro interior o bajo una mesa firme.","Fija libreros, roperos y objetos pesados a la pared.","Deja la mochila de emergencia cerca de la salida.","Activa las alertas sísmicas en los celulares de la casa.","Practica el simulacro con los niños como si fuera un juego."]],
+  ["Durante",["Si suena la alerta y puedes salir en segundos desde planta baja, sal con calma.","Si no alcanzas a salir: agáchate, cúbrete la cabeza y el cuello y sujétate de algo firme.","Con niños pequeños: abrázalos y cubre sus cabezas con tu cuerpo.","No uses elevadores ni bajes escaleras mientras tiembla.","En el auto: detente lejos de puentes, postes y edificios, y quédate dentro."]],
+  ["Después",["Revisa si alguien está herido. Ponte zapatos antes de caminar entre vidrios.","Espera réplicas.","Si huele a gas, no enciendas nada, cierra la llave del gas, abre ventanas y sal.","Si la casa tiene daños visibles, sal y no regreses hasta que la revisen.","Usa mensajes en lugar de llamadas para no saturar la red.","Infórmate por radio o canales oficiales de Protección Civil."]]]},
+ {id:"huracan",t:"Huracán o tormenta fuerte",s:"Prepárate antes de que llegue.",b:[
+  ["Antes",["Sigue los avisos oficiales del Servicio Meteorológico y Protección Civil.","Mete o amarra todo lo que esté afuera y pueda volar.","Protege ventanas con cinta en X o tablas.","Llena el tanque del auto, carga celulares y power bank.","Guarda documentos en bolsas impermeables.","Conoce tu refugio temporal más cercano. Si piden evacuar, hazlo."]],
+  ["Durante",["Quédate dentro, en el cuarto interior sin ventanas.","No salgas cuando parezca que ya pasó: la calma del ojo es temporal.","Desconecta aparatos si se va la luz.","Escucha la radio para saber cuándo termina."]],
+  ["Después",["No camines ni manejes por agua en movimiento: poca corriente puede tumbarte o arrastrar un auto.","Aléjate de cables caídos.","Toma solo agua embotellada o desinfectada.","Tira la comida que haya tocado agua de inundación."]]]},
+ {id:"inundacion",t:"Inundación",s:"Sube a lo más alto y no cruces el agua.",b:[
+  ["Antes",["Sube a lugares altos documentos, medicinas y aparatos.","Ten a la mano la mochila de emergencia.","Identifica la ruta hacia una zona alta."]],
+  ["Durante",["Si el agua entra, baja el interruptor de luz solo si estás seco y es seguro.","Sube al nivel más alto de la casa.","No cruces corrientes de agua a pie ni en auto.","Si te piden evacuar, sal de inmediato."]],
+  ["Después",["No regreses hasta que las autoridades lo indiquen.","Limpia y desinfecta todo lo que tocó el agua.","No uses aparatos eléctricos mojados.","Tira alimentos y medicinas que se mojaron."]]]},
+ {id:"incendio",t:"Incendio en casa",s:"Sal primero, llama después.",b:[
+  ["Antes",["Instala detectores de humo y prueba que funcionen.","Ten un extintor PQS en la cocina y aprende a usarlo.","Define dos salidas por cuarto y un punto de reunión afuera."]],
+  ["Durante",["Sal de inmediato con todos. No regreses por nada.","Gatea por debajo del humo.","Toca las puertas con el dorso de la mano: si están calientes, usa otra salida.","Si se prende la ropa: detente, tírate al piso y rueda.","Llama al 911 ya afuera."]],
+  ["Después",["No entres hasta que los bomberos lo autoricen.","Revisa quemaduras y busca atención médica si son grandes."]]]},
+ {id:"apagon",t:"Apagón prolongado",s:"Linternas, no velas. Cuidado con el monóxido.",b:[
+  ["Durante",["Usa linternas y lámparas de pilas. Evita velas con niños cerca.","Mantén cerrado el refrigerador: conserva el frío unas 4 horas y un congelador lleno unos 2 días.","Desconecta aparatos para protegerlos cuando regrese la luz.","Nunca uses generador, anafre, asador ni estufa de gas portátil dentro de la casa: el monóxido de carbono no huele y puede matar.","Come primero lo del refrigerador, luego lo congelado y al final la despensa.","Ahorra batería del celular: brillo bajo y modo ahorro."]],
+  ["Después",["Tira alimentos refrigerados que hayan estado sin frío por más de 4 horas.","Revisa qué gastaste y repón la despensa."]]]},
+ {id:"ataque",t:"Ataque armado o terrorismo",s:"Corre, escóndete y, solo como último recurso, defiéndete.",b:[
+  ["Corre",["Si hay una ruta segura, sal de inmediato y deja tus cosas.","Lleva a los niños de la mano o en brazos.","Ayuda a otros a salir, pero no esperes a quien no quiera moverse.","Cuando estés a salvo, llama al 911."]],
+  ["Escóndete",["Busca un lugar fuera de la vista, con puerta que se cierre.","Pon seguro, bloquea la puerta con muebles y apaga las luces.","Silencia los celulares, incluida la vibración.","Mantén a los niños callados y abrazados, lejos de puertas y ventanas."]],
+  ["Último recurso",["Solo si tu vida está en peligro inmediato, defiéndete con todo lo que tengas a la mano."]],
+  ["Cuando llegue la policía",["Mantén las manos visibles y vacías.","No hagas movimientos bruscos ni corras hacia ellos.","Sigue sus instrucciones."]],
+  ["Objeto sospechoso o explosión",["No toques ni muevas paquetes sospechosos. Aléjate y llama al 911.","Tras una explosión, cúbrete bajo algo firme, luego sal lo antes posible sin usar elevadores.","Cúbrete nariz y boca con tela por el polvo."]]]},
+ {id:"quimico",t:"Emergencia química, radiológica o nuclear",s:"Entra, quédate dentro e infórmate.",b:[
+  ["Si te avisan o ves la emergencia",["Entra al edificio más cercano y sólido. Ve al centro o al sótano, lejos de ventanas.","Cierra puertas y ventanas y apaga ventilación o aire acondicionado.","Si estuviste afuera, quítate la ropa exterior, métela en una bolsa y báñate con agua y jabón.","Quédate dentro hasta que las autoridades digan que es seguro salir.","No tomes yoduro de potasio a menos que las autoridades lo indiquen.","Usa la radio para recibir instrucciones."]],
+  ["Fuga química al aire libre",["Aléjate en dirección contraria al viento.","Si te quedas dentro, sella rendijas de ventanas y puertas con cinta y plástico."]]]},
+ {id:"ceniza",t:"Caída de ceniza volcánica",s:"Cubrebocas y casa cerrada.",b:[
+  ["Durante",["Quédate dentro con puertas y ventanas cerradas.","Si sales, usa cubrebocas N95, lentes y manga larga. Evita lentes de contacto.","Tapa tinacos, cisternas y depósitos de agua.","Protege aparatos electrónicos."]],
+  ["Después",["Humedece ligeramente la ceniza antes de barrer y recógela en bolsas.","No la tires al drenaje.","Limpia techos para que no se carguen de peso.","Si las autoridades piden evacuar, hazlo."]]]},
+ {id:"sanitaria",t:"Emergencia sanitaria o pandemia",s:"Medicinas, higiene y aislamiento.",b:[
+  ["Prepárate",["Ten medicamentos de uso diario para 30 días.","Ten termómetro, suero oral y cubrebocas.","Guarda despensa para 14 días por si hay que quedarse en casa."]],
+  ["Durante",["Lávate las manos seguido.","Si alguien enferma, aíslalo en un cuarto y que use cubrebocas.","Busca atención médica si hay dificultad para respirar, fiebre que no baja o deshidratación.","En niños: si no quieren beber, están muy decaídos o respiran con dificultad, acude al médico."]]]},
+ {id:"disturbios",t:"Disturbios o inseguridad en la zona",s:"Quédate en casa y lejos de multitudes.",b:[
+  ["Qué hacer",["Quédate en casa si es posible y mantén puertas cerradas.","Aléjate de manifestaciones, bloqueos y multitudes.","Usa rutas alternas y avisa a tu familia dónde estás.","Infórmate solo por fuentes oficiales y no compartas rumores.","Ten el tanque del auto a la mitad o más y efectivo en casa."]]]},
+ {id:"documentos",t:"Documentos y mochila de evacuación",s:"Qué llevar, cómo guardarlo y dónde dejarlo.",b:[
+  ["Cómo preparar los documentos",["Saca copias simples de todo y guárdalas en una bolsa impermeable dentro de la mochila.","Junta los originales importantes en una carpeta o bolsa impermeable fácil de agarrar al salir.","No enmiques actas de nacimiento originales.","Escanea todo, guárdalo en una memoria USB con contraseña y súbelo a la nube.","No guardes contraseñas, NIP ni números completos de tarjetas en la mochila.","Actualiza cada año: fotos, peso de los niños, recetas y pólizas."]],
+  ["Dónde dejar la mochila",["Cerca de la puerta principal o en el clóset de la entrada.","Que todos los adultos sepan dónde está.","Si tienen auto, una mochila pequeña extra en la cajuela.","Revísala cada 6 meses: caducidades, pilas, tallas y medicinas."]],
+  ["Al salir corriendo",["Toma la mochila y la carpeta de originales.","Toma celulares, cargadores y medicamentos del refrigerador si los hay.","Si es seguro, cierra gas y agua.","Avisa a tu contacto fuera de la ciudad a dónde van."]]]},
+ {id:"evacuar",t:"Si tienes que evacuar",s:"Mochila, documentos y avisar a dónde van.",b:[
+  ["Antes de salir",["Toma la mochila de emergencia, documentos y medicamentos.","Si hay tiempo y es seguro: cierra gas y agua y baja el interruptor de luz.","Ponte ropa de manga larga y zapatos cerrados.","Avisa a tu contacto fuera de la ciudad a dónde van."]],
+  ["En el camino",["Sigue las rutas que indiquen las autoridades.","No tomes atajos que puedan estar bloqueados o inundados.","Mantén a los niños contigo en todo momento."]]]},
+ {id:"ninos",t:"Cómo preparar a los niños",s:"Práctica, calma y un plan simple.",b:[
+  ["Qué enseñarles",["Que sepan su nombre completo y el de sus papás.","Que sepan que el 911 es para emergencias.","Practica simulacros cortos como juego: dónde esconderse y a dónde salir.","Explica con palabras sencillas que el plan existe para cuidarlos."]],
+  ["Qué preparar",["Pon en su mochila o ropa una tarjeta con nombres y teléfonos de los papás.","Incluye algo que los calme: peluche, cobija, un libro.","Conoce el plan de emergencia de su escuela o guardería y quién puede recogerlos."]],
+  ["Durante una emergencia",["Habla con calma y dales tareas pequeñas.","Mantén rutinas de comida y sueño en lo posible.","Limita que vean noticias o imágenes fuertes."]]]},
+ {id:"auxilios",t:"Primeros auxilios básicos",s:"Lo mínimo mientras llega ayuda.",b:[
+  ["Siempre",["Llama al 911 y sigue sus instrucciones.","Toma un curso de primeros auxilios, por ejemplo con la Cruz Roja."]],
+  ["Situaciones comunes",["Sangrado: presiona fuerte y sin soltar con gasa o tela limpia.","Quemadura: agua corriente fresca unos 20 minutos. No pongas hielo, pasta ni pomadas. Cubre con gasa limpia.","Atragantamiento: si la persona no puede toser, hablar ni respirar, pide ayuda y aplica la maniobra que hayas aprendido. En niños pequeños la técnica es distinta.","No muevas a alguien con posible lesión de cuello o espalda, salvo peligro inmediato.","Fiebre en niños: usa la medicina según su peso y lo que indica la caja, y consulta al médico."]]]}
+ ,{id:"ciber",t:"Ciberataque o caída de sistemas",s:"Efectivo, papel y desconfiar de todo mensaje urgente.",b:[
+  ["Antes",["Ten efectivo en billetes chicos para varios días: si fallan bancos y terminales, no podrás pagar con tarjeta.","Guarda en papel teléfonos, números de pólizas, cuentas y del banco.","Activa la verificación en dos pasos en correo, banco, WhatsApp y redes.","Usa un gestor de contraseñas e imprime los códigos de respaldo.","Respalda fotos y documentos en la nube y en un disco que guardes desconectado.","Mantén actualizados celulares, computadoras y el módem.","Ten el tanque del auto a la mitad o más: las gasolineras también pueden fallar."]],
+  ["Si fallan bancos, pagos o internet",["Usa efectivo y no hagas compras de pánico.","Infórmate por radio AM/FM y canales oficiales.","Si cae la red celular, sigue el plan: punto de reunión y contacto fuera de la ciudad.","Desconfía de mensajes, llamadas o links que pidan datos o pagos urgentes, aunque parezcan del banco o del gobierno.","No instales apps ni abras archivos que lleguen por WhatsApp o correo durante la emergencia."]],
+  ["Si te hackean o te roban datos",["Desconecta de internet el equipo afectado.","Desde otro dispositivo seguro cambia contraseñas, empezando por el correo y el banco.","Llama al banco al número del reverso de tu tarjeta para bloquearla.","Reporta a la Policía Cibernética (en México, 088).","No pagues rescates ni negocies con extorsionadores."]]]},
+ {id:"comunicacion",t:"Sin teléfono ni internet",s:"Mensajes cortos, contacto fuera de la ciudad y punto de reunión.",b:[
+  ["Qué hacer",["Manda mensajes de texto en lugar de llamar: pasan aunque la red esté saturada.","Avisa a tu contacto fuera de la ciudad: él junta las noticias de todos.","Si no logran comunicarse, vayan al punto de reunión acordado.","Ahorra batería: modo avión y enciende el celular a horas fijas, por ejemplo cada hora en punto.","Usa la radio para noticias oficiales.","Si tienen walkie-talkies, acuerden un canal fijo para la familia."]]]},
+ {id:"gas",t:"Fuga de gas",s:"No enciendas nada y sal.",b:[
+  ["Qué hacer",["No enciendas luces, apagadores, cerillos ni encendedores.","No uses el celular dentro de la casa.","Cierra la llave de paso del gas.","Abre puertas y ventanas.","Sal con todos y llama al 911 o a tu gasera desde afuera.","No regreses hasta que lo revise un técnico."]]]},
+ {id:"calor",t:"Ola de calor",s:"Agua, sombra y vigilar a los niños.",b:[
+  ["Qué hacer",["Toma agua aunque no tengas sed; da líquidos seguido a los niños.","Evita el sol en las horas de más calor.","Usa ropa ligera y clara.","Nunca dejes a un niño ni a una mascota dentro del auto, ni un momento.","Duerme en la parte más fresca de la casa."]],
+  ["Golpe de calor",["Señales: piel caliente y roja, confusión, dolor de cabeza fuerte, vómito o desmayo.","Llama al 911, lleva a la persona a la sombra y enfríala con agua y aire.","No le des líquidos si está confundida o inconsciente."]]]},
+ {id:"frio",t:"Frío extremo o heladas",s:"Capas de ropa y nunca braseros dentro.",b:[
+  ["Qué hacer",["Viste en capas y cubre cabeza, manos y pies; los niños pierden calor más rápido.","Nunca uses anafres, braseros, asadores ni estufas de gas dentro de cuartos cerrados: producen monóxido de carbono.","Juntos en un solo cuarto se conserva mejor el calor.","Revisa a adultos mayores y vecinos solos."]],
+  ["Hipotermia",["Señales: temblor intenso, torpeza, somnolencia o confusión.","Lleva a la persona a un lugar cálido, quítale ropa mojada, abrígala y llama al 911."]]]},
+ {id:"tsunami",t:"Tsunami (si estás en la costa)",s:"Sismo fuerte en la playa: sube sin esperar aviso.",b:[
+  ["Qué hacer",["Si estás en la costa y sientes un sismo fuerte o largo, aléjate del mar y sube a una zona alta de inmediato.","Si ves que el mar se retira de golpe, corre a una zona alta: viene la ola.","No esperes la alerta oficial.","Puede haber varias olas durante horas; no regreses hasta que las autoridades lo indiquen."]]]},
+ {id:"deslave",t:"Deslave o deslizamiento",s:"Atiende las señales y sal a tiempo.",b:[
+  ["Señales de alerta",["Grietas nuevas en el suelo, paredes o banquetas.","Árboles, postes o bardas que se inclinan.","Ruidos fuertes que vienen del cerro.","Agua que de pronto sale turbia o deja de correr en un arroyo."]],
+  ["Qué hacer",["Sal de inmediato hacia un lugar alejado de la ladera.","Avisa a vecinos y a Protección Civil.","Después, no regreses: puede haber más deslizamientos."]]]},
+ {id:"aguacorte",t:"Corte de agua prolongado",s:"Primero para beber, luego para lo demás.",b:[
+  ["Qué hacer",["Al primer aviso llena contenedores, cubetas y la tina.","El agua de beber es lo primero: no la uses para lavar.","Usa agua de la tina o cubetas para el inodoro, o bolsas de baño de emergencia.","Usa platos desechables y toallas húmedas para ahorrar agua.","Si tienes que usar agua de otra fuente, fíltrala y desinféctala antes de beberla."]]]},
+ {id:"tormenta",t:"Tormenta eléctrica o granizo",s:"Adentro y lejos de ventanas.",b:[
+  ["Qué hacer",["Entra a un edificio o al auto con ventanas cerradas.","Aléjate de ventanas y desconecta aparatos.","Si estás al aire libre, no te pongas bajo árboles solos ni en zonas altas.","No uses el agua de la regadera durante rayos cercanos.","Con granizo, cubre el auto si puedes hacerlo sin salir al peligro."]]]},
+ {id:"perdido",t:"Si se pierde un niño",s:"Actúa en el primer minuto.",b:[
+  ["Qué hacer",["Avisa de inmediato al personal de seguridad del lugar para que vigilen las salidas.","Da su descripción y la ropa que trae; ayuda tener una foto del mismo día.","Llama al 911.","Enséñales antes: si se pierden, quedarse quietos y pedir ayuda a una mamá con niños o a alguien con uniforme del lugar."]]]}
+];
+
+/* ---------- Listas de revisión ---------- */
+const CHECKS={
+   digital:{t:"Seguridad digital",s:"Para que un ciberataque o perder el celular no te deje sin acceso.",i:["Verificación en dos pasos en correo y banco","Verificación en dos pasos en WhatsApp","Gestor de contraseñas en uso","Códigos de respaldo impresos y guardados","Fotos y documentos respaldados en la nube","Respaldo en disco externo desconectado","Celulares y computadoras actualizados","Contraseña del módem cambiada","Efectivo de emergencia guardado","Teléfonos del banco anotados en papel"]},
+ casa:{t:"Casa y familia",s:"Lo que conviene saber hacer antes de que pase algo.",i:["Sé cerrar la llave del gas","Sé cerrar la llave del agua","Sé bajar el interruptor de la luz","Extintor revisado este año","Detector de humo probado","Muebles altos fijados a la pared","Simulacro practicado este año","Los niños saben su nombre completo y el de sus papás","Tarjeta con teléfonos en la mochila de los niños","Alertas sísmicas activas en los celulares","Tanque del auto a la mitad o más"]}
+};
+
+const RISKS=[["sismo","Sismos"],["huracan","Huracanes y lluvias fuertes"],["inundacion","Inundaciones"],["volcan","Ceniza volcánica"],["frio","Frío extremo"],["calor","Calor extremo"],["costa","Vivo en la costa"]];
+const MAINT=[
+ {id:"carga",t:"Cargar power bank y lámparas recargables",d:30},
+ {id:"detectores",t:"Probar detectores de humo y monóxido",d:30},
+ {id:"respaldo",t:"Enviar respaldo de Listos a la familia",d:30},
+ {id:"efectivo",t:"Revisar que siga el efectivo de emergencia",d:90},
+ {id:"caducidades",t:"Revisar caducidades, pilas y medicinas",d:180},
+ {id:"agua",t:"Rotar garrafones de agua",d:180},
+ {id:"tallas",t:"Revisar tallas de ropa y pañales de los niños",d:180},
+ {id:"simulacro",t:"Hacer un simulacro en familia",d:180},
+ {id:"contactos",t:"Actualizar contactos y respaldo digital",d:180},
+ {id:"extintor",t:"Revisar o recargar el extintor",d:365}
+];
+
+/* ---------- Mochila de evacuación y documentos ---------- */
+const BAG=[
+ ["Dinero y papeles",["Bolsa impermeable con copias de todos los documentos","Memoria USB con documentos escaneados","Efectivo en billetes chicos y monedas","Lista de contactos en papel","Llaves de repuesto de casa y auto"]],
+ ["Agua y comida",["Agua: 1 a 2 litros por persona","Barras, galletas y comida que no se cocine para un día","Purés y juguitos para los niños","Cucharas y vasos desechables"]],
+ ["Salud",["Botiquín pequeño","Medicamentos de uso diario para 7 días","Paracetamol infantil con su jeringa","Gel antibacterial y cubrebocas","Lentes de repuesto si alguien los usa"]],
+ ["Ropa",["Una muda por persona","Calcetines extra","Impermeable o poncho","Manta térmica por persona"]],
+ ["Luz y comunicación",["Linterna o lámpara de cabeza con pilas","Power bank cargado y cables","Radio pequeño de pilas","Silbato"]],
+ ["Niños",["Pañales y toallitas para 2 días","Ropa extra para cada niño","Su peluche, cobija o juguete favorito","Tarjeta con teléfonos de los papás en su ropa o mochila"]],
+ ["Otros",["Papel higiénico","Bolsas de basura grandes","Navaja multiusos","Cinta gris","Encendedor"]]
+];
+const DOCS_ADULT=[
+ ["ine","INE o identificación oficial","Copia en la mochila; el original lo traes en la cartera."],
+ ["acta","Acta de nacimiento","Copia en la mochila. No enmiques el original: muchas oficinas ya no lo aceptan."],
+ ["curp","CURP impresa",""],
+ ["pasaporte","Pasaporte","Copia en la mochila; el original en la bolsa de originales."],
+ ["licencia","Licencia de manejo","Copia."],
+ ["seguro","Afiliación médica (IMSS, ISSSTE o póliza de gastos médicos)","Copia del carnet o de la póliza."],
+ ["cedula","Título o cédula profesional","Copia. Te sirve para trabajar si tienen que reubicarse."],
+ ["medico","Hoja médica","Tipo de sangre, alergias, enfermedades y medicamentos, escrita a mano o impresa."],
+ ["foto","Foto reciente impresa","Para identificar o buscar a alguien."]
+];
+const DOCS_KID=[
+ ["acta","Acta de nacimiento","Copia en la mochila; el original en la bolsa de originales."],
+ ["curp","CURP impresa",""],
+ ["cartilla","Cartilla de vacunación","Copia; el original en la bolsa de originales."],
+ ["seguro","Afiliación al seguro médico",""],
+ ["pasaporte","Pasaporte, si tiene","Copia."],
+ ["escuela","Credencial o constancia escolar","Ayuda a inscribirlo en otra escuela si se mudan."],
+ ["medico","Hoja médica con peso actual","Tipo de sangre, alergias, peso y medicamentos. El peso sirve para calcular dosis."],
+ ["foto","Foto reciente impresa","Indispensable si llegan a separarse."]
+];
+const DOCS_HOME=[
+ ["matrimonio","Acta de matrimonio","Copia."],
+ ["escrituras","Escrituras o contrato de renta","Copia. Acredita que viven ahí para apoyos y seguros."],
+ ["domicilio","Comprobante de domicilio reciente","Luz, agua o teléfono."],
+ ["polizas","Pólizas de seguro de casa, auto y vida","Copia, con el teléfono para reportar siniestros."],
+ ["auto","Tarjeta de circulación y factura del auto","Copia."],
+ ["banco","Bancos y sus teléfonos de atención","Solo el nombre del banco y el teléfono. Nunca números completos de tarjeta, NIP ni contraseñas."],
+ ["recetas","Recetas médicas vigentes","Para surtir medicamentos en otra ciudad."],
+ ["medicos","Datos del pediatra y médicos de la familia","Nombre, teléfono y hospital."],
+ ["contactos","Lista de contactos de emergencia en papel",""],
+ ["rutas","Mapa con rutas de salida y puntos de reunión","Marcado a mano."],
+ ["rfc","Constancia de situación fiscal",""],
+ ["testamento","Testamento o poderes notariales, si tienen","Copia; el original con el notario."],
+ ["usb","Memoria USB con todo escaneado","Con contraseña. Súbelo también a la nube."]
+];
+function people(){const a=[];for(let i=0;i<nAd();i++)a.push({key:"a"+i,label:"Adulto "+(i+1),docs:DOCS_ADULT});S.house.kids.forEach((k,i)=>a.push({key:"k"+i,label:k.name?k.name:"Niño(a) de "+k.age+(Number(k.age)===1?" año":" años"),docs:DOCS_KID}));return a}
+function bagStats(){let t=0,d=0;BAG.forEach((g,gi)=>g[1].forEach((_,j)=>{t++;if(S.plan.checks["bag:"+gi+":"+j])d++}));return{t,d}}
+function docStats(){let t=0,d=0;people().forEach(p=>p.docs.forEach(x=>{t++;if(S.plan.checks["doc:"+p.key+":"+x[0]])d++}));DOCS_HOME.forEach(x=>{t++;if(S.plan.checks["doc:h:"+x[0]])d++});return{t,d}}
+function docRow(key,x){return '<label class="check"><input type="checkbox" data-check="'+key+'"'+(S.plan.checks[key]?" checked":"")+'><span><span class="item-name">'+esc(x[1])+'</span>'+(x[2]?'<br><span class="small muted">'+esc(x[2])+'</span>':"")+'</span></label>'}
+function vBagDocs(){
+ const b=bagStats(),d=docStats();
+ let h='<h2 id="mochila">Mochila para salir corriendo</h2><p class="muted small">Una mochila siempre lista junto a la puerta. '+b.d+' de '+b.t+' cosas listas.</p><div class="bar'+(b.d<b.t?" low":"")+'"><i style="width:'+Math.round(b.d/b.t*100)+'%"></i></div><div class="panel flush">'+BAG.map((g,gi)=>'<div class="cat-h">'+g[0]+'</div>'+g[1].map((t,j)=>'<label class="check"><input type="checkbox" data-check="bag:'+gi+':'+j+'"'+(S.plan.checks["bag:"+gi+":"+j]?" checked":"")+'><span>'+esc(t)+'</span></label>').join("")).join("")+'</div>';
+ h+='<h2 id="documentos">Documentos</h2><p class="muted small">Copias en una bolsa impermeable dentro de la mochila, y los originales juntos en una carpeta fácil de agarrar al salir. Marca cada uno cuando su copia ya esté en la mochila. '+d.d+' de '+d.t+' listos.</p><div class="bar'+(d.d<d.t?" low":"")+'"><i style="width:'+Math.round(d.d/d.t*100)+'%"></i></div>';
+ h+=people().map(p=>'<h3>'+esc(p.label)+'</h3><div class="panel flush">'+p.docs.map(x=>docRow("doc:"+p.key+":"+x[0],x)).join("")+'</div>').join("");
+ h+='<h3>De la familia y la casa</h3><div class="panel flush">'+DOCS_HOME.map(x=>docRow("doc:h:"+x[0],x)).join("")+'</div>';
+ h+='<button class="btn" data-a="guide" data-v="documentos">Cómo preparar documentos y mochila</button>';
+ return h;
+}
+
+/* ---------- Estado ---------- */
+const KEY="listos-v1";
+function defState(){return{v:1,house:{adults:2,kids:[{name:"",age:2,diaper:true},{name:"",age:4,diaper:false}]},goal:3,weeks:4,planMode:"weeks",budget:0,cash:{daily:500,saved:0},inv:[],prices:{},maint:{},risks:{},plan:{contacts:[],meet1:"",meet2:"",outOfTown:"",medical:"",checks:{}},lastReview:null};}
+function normalize(x){const d=defState();x=Object.assign(d,x||{});x.house=Object.assign(defState().house,x.house||{});if(!Array.isArray(x.house.kids))x.house.kids=[];x.plan=Object.assign(defState().plan,x.plan||{});if(!Array.isArray(x.inv))x.inv=[];if(!Array.isArray(x.plan.contacts))x.plan.contacts=[];x.prices=x.prices||{};x.maint=x.maint||{};x.cash=Object.assign({daily:500,saved:0},x.cash||{});x.risks=x.risks||{};if(x.lastReview&&!x.maint.caducidades)x.maint.caducidades=x.lastReview;x.plan.checks=x.plan.checks||{};if(!LEVELS.includes(x.goal))x.goal=3;return x;}
+let S;
+try{S=normalize(JSON.parse(localStorage.getItem(KEY)))}catch(e){S=normalize(null)}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){toast("No se pudo guardar en este dispositivo.")}}
+const ui={tab:"inicio",guide:null,filter:"todo"};
+
+/* ---------- Cálculos ---------- */
+const nAd=()=>Math.max(0,Number(S.house.adults)||0);
+const nKids=()=>S.house.kids.length;
+const nDia=()=>S.house.kids.filter(k=>k.diaper).length;
+const nPpl=()=>nAd()+nKids();
+const up=x=>Math.max(0,Math.ceil(x-1e-9));
+function target(it,d){
+ if(d<it.minLvl)return 0;
+ if(it.needKids&&!nKids())return 0;
+ if(it.needDiaper&&!nDia())return 0;
+ if(it.risk&&S.risks[it.risk]===false)return 0;
+ const r=it.rule;
+ switch(r.t){
+  case "pp":return up(r.r*nPpl()*d);
+  case "kid":return up(r.r*nKids()*d);
+  case "diaper":return up(r.r*nDia()*d);
+  case "person":return up(r.r*nPpl());
+  case "kidn":return up(r.r*nKids());
+  case "adult":return up(r.r*Math.max(1,nAd()));
+  case "fixed":return r.q;
+  case "table":{let v=0;for(const L of LEVELS){if(d>=L&&r.m[L]!=null)v=r.m[L]}return v}
+ }return 0;
+}
+function today0(){const t=new Date();t.setHours(0,0,0,0);return t}
+function parseD(s){if(!s)return null;const p=s.split("-").map(Number);if(p.length<3||!p[0])return null;return new Date(p[0],p[1]-1,p[2])}
+function isoD(d){const z=n=>String(n).padStart(2,"0");return d.getFullYear()+"-"+z(d.getMonth()+1)+"-"+z(d.getDate())}
+function daysLeft(s){const d=parseD(s);if(!d)return null;return Math.round((d-today0())/864e5)}
+function fmtD(s){const d=parseD(s);return d?d.toLocaleDateString("es-MX",{day:"numeric",month:"short",year:"numeric"}):""}
+function status(b){const n=daysLeft(b.exp);if(n===null)return "none";if(n<0)return "expired";if(n<=30)return "soon";if(n<=90)return "rotate";return "ok"}
+function stock(id){return S.inv.filter(b=>b.item===id&&status(b)!=="expired").reduce((s,b)=>s+(Number(b.qty)||0),0)}
+function kidKcal(a){a=Number(a)||0;if(a<=3)return 1000;if(a<=8)return 1400;if(a<=13)return 1800;return 2200}
+function dailyKcal(){return nAd()*2000+S.house.kids.reduce((s,k)=>s+kidKcal(k.age),0)}
+function coverage(){
+ const ppl=nPpl()||1;const water=stock("agua")/(4*ppl);let kc=0;
+ for(const b of S.inv){if(status(b)==="expired")continue;const it=BY_ID[b.item];if(it&&it.kcal)kc+=it.kcal*(Number(b.qty)||0)}
+ const food=kc/(dailyKcal()||2000);
+ return{water,food,days:Math.min(water,food)};
+}
+function goalItems(d){return CATALOG.map(it=>({it,t:target(it,d),s:stock(it.id)})).filter(x=>x.t>0)}
+function pct(d){const g=goalItems(d);if(!g.length)return 0;return g.reduce((a,x)=>a+Math.min(1,x.s/x.t),0)/g.length}
+function missing(d){return goalItems(d).filter(x=>x.s<x.t).map(x=>Object.assign({},x,{need:up(x.t-x.s)})).sort((a,b)=>a.it.prio-b.it.prio||CAT_ORDER[a.it.cat]-CAT_ORDER[b.it.cat])}
+function priceOf(id){const o=S.prices[id];if(o!=null&&o!=="")return Number(o)||0;return DEF_PRICE[id]!=null?DEF_PRICE[id]:null}
+function price(id){return priceOf(id)||0}
+function costOf(list){return list.reduce((a,x)=>a+price(x.it.id)*x.need,0)}
+function unknownPrices(list){return list.filter(x=>priceOf(x.it.id)==null)}
+function cashTarget(d){return Math.round(d*(Number(S.cash.daily)||0))}
+function cashSaved(){return Number(S.cash.saved)||0}
+function weekPlan(d){
+ const m=missing(d);if(!m.length)return[];
+ if(S.planMode==="budget"&&S.budget>0){
+  const B=Number(S.budget),out=[];let cur=[],sum=0;
+  for(const x of m){const p=price(x.it.id);let left=x.need;
+   while(left>0){let fit=p>0?Math.floor((B-sum)/p+1e-9):left;
+    if(fit<=0){if(cur.length){out.push(cur);cur=[];sum=0;continue}fit=1}
+    const take=Math.min(fit,left);cur.push(Object.assign({},x,{need:take}));sum+=take*p;left=Math.round((left-take)*1000)/1000;}
+  }
+  if(cur.length)out.push(cur);return out;
+ }
+ const weeks=S.weeks||1;
+ const known=m.filter(x=>price(x.it.id));
+ const avg=known.length?costOf(known)/known.length:1;
+ const w=x=>price(x.it.id)?price(x.it.id)*x.need:avg;
+ const total=m.reduce((a,x)=>a+w(x),0),per=total/weeks;
+ const out=Array.from({length:weeks},()=>[]);let i=0,acc=0;
+ for(const x of m){out[i].push(x);acc+=w(x);while(i<weeks-1&&acc>=per*(i+1)-1e-9)i++;}
+ return out.filter(g=>g.length);
+}
+const money=n=>"$"+Math.round(n).toLocaleString("es-MX");
+
+/* ---------- Utilidades UI ---------- */
+const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+function itemName(b){return b.item==="custom"?(b.name||"Artículo"):(BY_ID[b.item]?BY_ID[b.item].name:"Artículo")}
+function itemUnit(b){return b.item==="custom"?(b.unit||"pieza"):(BY_ID[b.item]?BY_ID[b.item].unit:"pieza")}
+function expChip(b){
+ const st=status(b),n=daysLeft(b.exp);
+ if(st==="none")return '<span class="chip">Sin caducidad</span>';
+ if(st==="expired")return '<span class="chip expired">Venció hace '+(-n)+(n===-1?" día":" días")+'</span>';
+ if(n===0)return '<span class="chip soon">Vence hoy</span>';
+ if(st==="soon")return '<span class="chip soon">Vence en '+n+(n===1?" día":" días")+'</span>';
+ if(st==="rotate")return '<span class="chip rotate">Vence '+fmtD(b.exp)+'</span>';
+ return '<span class="chip ok">Vence '+fmtD(b.exp)+'</span>';
+}
+let toastT;
+function toast(msg){const l=document.getElementById("layer");let t=document.querySelector(".toast");if(!t){t=document.createElement("div");t.className="toast";t.setAttribute("role","status");document.body.appendChild(t)}t.textContent=msg;clearTimeout(toastT);toastT=setTimeout(()=>t.remove(),2800)}
+const ICONS={
+ inicio:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>',
+ despensa:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="1"/><path d="M4 9h16M4 15h16M9 6h2M9 12h2M9 18h2"/></svg>',
+ compras:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h2l2.4 11h10.8L21 7H7"/><circle cx="9" cy="19.5" r="1.5"/><circle cx="17" cy="19.5" r="1.5"/></svg>',
+ guias:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 3l9 16H3z"/><path d="M12 10v4M12 16.5v.5" stroke-linecap="round"/></svg>',
+ plan:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.3"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6M15 14.6c3 .1 6 2 6 5.4"/></svg>'
+};
+const TABS=[["inicio","Inicio"],["despensa","Despensa"],["compras","Compras"],["guias","Qué hacer"],["plan","Plan"]];
+function renderNav(){document.getElementById("nav").innerHTML=TABS.map(([id,l])=>'<button data-a="tab" data-v="'+id+'"'+(ui.tab===id?' aria-current="page"':"")+'>'+ICONS[id]+'<span>'+l+'</span></button>').join("")}
+function segLevels(cur,action){return '<div class="seg" role="group" aria-label="Meta de días">'+LEVELS.map(L=>'<button data-a="'+action+'" data-v="'+L+'" aria-pressed="'+(cur===L)+'">'+L+' días</button>').join("")+'</div>'}
+function topbar(){return '<div class="topbar"><div class="brand"><svg viewBox="0 0 24 24"><rect x="1" y="9" width="5" height="6" fill="var(--signal)"/><rect x="7" y="9" width="5" height="6" fill="var(--signal)"/><rect x="13" y="9" width="5" height="6" fill="var(--signal)"/><rect x="19" y="9" width="4" height="6" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>Listos</div><a class="call" href="tel:911">Llamar al 911</a></div>'}
+
+/* ---------- Vistas ---------- */
+function vInicio(){
+ const c=coverage(),days=Math.floor(c.days+1e-9);
+ const big=days>30?"más de 30 días":days<1?"menos de un día":days===1?"1 día":days+" días";
+ let cells="";for(let i=1;i<=30;i++)cells+='<i class="'+(i<=days?"on":"")+(LEVELS.includes(i)&&i<30?" lvl":"")+'"'+(i<=days?' style="animation-delay:'+(i*18)+'ms"':"")+'></i>';
+ const marks=LEVELS.map(L=>'<span style="grid-column:'+L+'">'+L+(L===30?" días":"")+'</span>').join("");
+ let limit="";
+ if(nPpl()===0)limit='Agrega a tu familia en Plan para calcular.';
+ else if(c.water===0&&c.food===0)limit='Agrega lo que ya tienes en Despensa para empezar a contar.';
+ else limit='Agua para '+fmtN(Math.floor(c.water*10)/10)+' días y comida para '+fmtN(Math.floor(c.food*10)/10)+' días. <span class="limit">Lo que más te limita: '+(c.water<=c.food?"el agua":"la comida")+'</span>';
+ const g=S.goal,p=pct(g),miss=missing(g),idx=LEVELS.indexOf(g),next=LEVELS[idx+1];
+ let goal='<div class="panel"><div class="row between wrap"><h3 style="margin:0">Tu meta</h3><span class="muted small">'+Math.round(p*100)+'% listo</span></div><div style="margin:12px 0">'+segLevels(g,"goal")+'</div><div class="bar'+(p<.5?" low":"")+'"><i style="width:'+Math.round(p*100)+'%"></i></div>';
+ if(miss.length)goal+='<p>Te faltan '+miss.length+(miss.length===1?" artículo":" artículos")+' para '+g+' días. Necesitas unos <b>'+money(costOf(miss)+Math.max(0,cashTarget(g)-cashSaved()))+'</b> contando el efectivo.</p><button class="btn primary block" data-a="tab" data-v="compras">Ver lista de compras</button>';
+ else goal+='<p>Ya tienes todo para '+g+' días.</p>'+(next?'<button class="btn signal block" data-a="goal" data-v="'+next+'">Subir la meta a '+next+' días</button>':'<p class="muted">Llegaste a la meta más alta. Ahora solo mantén y rota.</p>');
+ goal+='</div>';
+ const al=S.inv.map((b,i)=>({b,i,st:status(b),n:daysLeft(b.exp)})).filter(x=>x.st==="expired"||x.st==="soon"||x.st==="rotate").sort((a,b)=>a.n-b.n);
+ let alerts='<h2>Por vencer</h2>';
+ if(!al.length)alerts+='<div class="panel"><p class="muted" style="margin:0">Nada vence en los próximos 3 meses.</p></div>';
+ else alerts+='<div class="panel flush"><ul class="list">'+al.map(x=>'<li class="alert-li"><div class="grow"><div class="item-name">'+esc(itemName(x.b))+'</div><div class="small muted">'+fmtN(x.b.qty)+' '+fu(x.b.qty,itemUnit(x.b))+(x.b.loc?", en "+esc(x.b.loc):"")+'</div><div style="margin-top:4px">'+expChip(x.b)+'</div></div><div class="row"><button class="btn small" data-a="edit" data-v="'+x.i+'">Editar</button><button class="btn small primary" data-a="used" data-v="'+x.i+'">Ya lo usé</button></div></li>').join("")+'</ul></div><p class="small muted">Rota: úsalo en la comida de la semana y repón. Al marcarlo como usado aparece en tu lista de compras.</p>';
+ const mt=MAINT.map(m=>{const last=S.maint[m.id];const due=last?m.d-Math.round((today0()-parseD(last))/864e5):-1;return{m,last,due}}).sort((a,b)=>a.due-b.due);
+ let rev='<h2>Mantenimiento</h2><div class="panel flush"><ul class="list">'+mt.map(x=>'<li class="alert-li"><div class="grow"><div class="item-name">'+esc(x.m.t)+'</div><div style="margin-top:4px">'+(!x.last?'<span class="chip soon">Pendiente</span>':x.due<=0?'<span class="chip soon">Ya toca</span>':'<span class="chip ok">En '+x.due+(x.due===1?" día":" días")+'</span>')+'</div></div><button class="btn small'+(x.due<=0?" primary":"")+'" data-a="maint" data-v="'+x.m.id+'">Hecho</button></li>').join("")+'</ul></div>';
+ const quick='<h2>¿Qué hago si...?</h2><div class="quick">'+["sismo","huracan","apagon","incendio","ataque","ciber","gas","evacuar","documentos"].map(id=>{const gd=GUIDES.find(x=>x.id===id);return '<button data-a="guide" data-v="'+id+'">'+esc(gd.t)+'</button>'}).join("")+'</div>';
+ return topbar()+'<section class="hero"><p class="hero-k">Hoy tu casa tiene agua y comida para</p><h1 class="hero-n">'+big+'</h1><div class="ruler" aria-hidden="true">'+cells+'</div><div class="marks" aria-hidden="true">'+marks+'</div><p class="hero-sub">'+limit+'</p></section>'+goal+quick+(()=>{const b=bagStats(),d=docStats();return '<h2>Mochila de evacuación</h2><div class="panel"><div class="row between"><span>Mochila</span><span class="small">'+b.d+' de '+b.t+'</span></div><div class="bar'+(b.d<b.t?" low":"")+'"><i style="width:'+Math.round(b.d/b.t*100)+'%"></i></div><div class="row between" style="margin-top:8px"><span>Documentos</span><span class="small">'+d.d+' de '+d.t+'</span></div><div class="bar'+(d.d<d.t?" low":"")+'"><i style="width:'+Math.round(d.d/d.t*100)+'%"></i></div><button class="btn block" style="margin-top:10px" data-a="goto" data-v="mochila">Revisar mochila y documentos</button></div>'})()+alerts+rev;
+}
+
+function vDespensa(){
+ const g=S.goal;
+ let h=topbar()+'<div class="row between" style="margin-top:12px"><h2 style="margin:0">Despensa</h2><button class="btn primary" data-a="add">Agregar</button></div>';
+ h+='<div class="seg" style="margin:14px 0" role="group" aria-label="Filtro">'+[["todo","Lo que tengo"],["vence","Por vencer"],["falta","Me falta"]].map(([k,l])=>'<button data-a="filter" data-v="'+k+'" aria-pressed="'+(ui.filter===k)+'">'+l+'</button>').join("")+'</div>';
+ if(!S.inv.length&&ui.filter!=="falta")return h+'<div class="panel empty"><p><b>Tu despensa está vacía.</b></p><p class="muted">Agrega lo que ya tienes en casa para saber cuántos días cubres.</p><button class="btn primary" data-a="add">Agregar lo primero</button></div>';
+ const groups={};
+ const push=(cat,html)=>{(groups[cat]=groups[cat]||[]).push(html)};
+ if(ui.filter==="vence"){
+  const al=S.inv.map((b,i)=>({b,i,n:daysLeft(b.exp),st:status(b)})).filter(x=>x.n!==null&&x.st!=="ok").sort((a,b)=>a.n-b.n);
+  if(!al.length)return h+'<div class="panel"><p class="muted" style="margin:0">Nada vence en los próximos 3 meses.</p></div>';
+  return h+'<div class="panel flush"><ul class="list">'+al.map(x=>'<li class="alert-li"><div class="grow"><div class="item-name">'+esc(itemName(x.b))+'</div><div class="small muted">'+fmtN(x.b.qty)+' '+fu(x.b.qty,itemUnit(x.b))+'</div><div style="margin-top:4px">'+expChip(x.b)+'</div></div><div class="row"><button class="btn small" data-a="edit" data-v="'+x.i+'">Editar</button><button class="btn small primary" data-a="used" data-v="'+x.i+'">Ya lo usé</button></div></li>').join("")+'</ul></div>';
+ }
+ for(const it of CATALOG){
+  const t=target(it,g),s=stock(it.id),bs=S.inv.map((b,i)=>({b,i})).filter(x=>x.b.item===it.id);
+  if(ui.filter==="todo"&&!bs.length)continue;
+  if(ui.filter==="falta"&&!(t>0&&s<t))continue;
+  const p=t?Math.min(1,s/t):1;
+  let row='<li><div class="row between"><span class="item-name grow">'+esc(it.name)+'</span><span class="small'+(t&&s<t?"":" muted")+'">'+fmtN(s)+(t?" de "+fmtN(t):"")+' '+fu(t||s,it.unit)+'</span></div>';
+  if(t)row+='<div class="bar'+(p<1?" low":"")+'"><i style="width:'+Math.round(p*100)+'%"></i></div>';
+  if(bs.length)row+='<div class="batches">'+bs.map(x=>'<button class="chip '+(status(x.b)==="none"?"":status(x.b))+'" data-a="edit" data-v="'+x.i+'" aria-label="Editar">'+fmtN(x.b.qty)+' '+fu(x.b.qty,it.unit)+(x.b.exp?", "+(status(x.b)==="expired"?"vencido":fmtD(x.b.exp)):"")+'</button>').join("")+'</div>';
+  if(ui.filter==="falta")row+='<div style="margin-top:6px"><button class="btn small" data-a="add" data-item="'+it.id+'" data-qty="'+up(t-s)+'">Agregar</button></div>';
+  row+='</li>';push(it.cat,row);
+ }
+ if(ui.filter==="todo")S.inv.forEach((b,i)=>{if(b.item!=="custom")return;push("otros",'<li><div class="row between"><span class="item-name grow">'+esc(b.name)+'</span><span class="small muted">'+fmtN(b.qty)+' '+esc(fu(b.qty,b.unit||"pieza"))+'</span></div><div class="batches"><button class="chip '+(status(b)==="none"?"":status(b))+'" data-a="edit" data-v="'+i+'">'+(b.exp?(status(b)==="expired"?"Vencido":"Vence "+fmtD(b.exp)):"Sin caducidad")+(b.loc?", "+esc(b.loc):"")+'</button></div></li>')});
+ const body=CATS.filter(c=>groups[c[0]]).map(c=>'<div class="cat-h">'+c[1]+'</div><ul class="list">'+groups[c[0]].join("")+'</ul>').join("");
+ if(!body)return h+'<div class="panel"><p class="muted" style="margin:0">'+(ui.filter==="falta"?"No te falta nada para "+g+" días.":"Nada que mostrar.")+'</p></div>';
+ return h+(ui.filter==="falta"?'<p class="small muted">Comparado con tu meta de '+g+' días.</p>':"")+'<div class="panel flush">'+body+'</div>';
+}
+
+function vCompras(){
+ const g=S.goal,miss=missing(g);
+ let h=topbar()+'<h2>Compras y dinero</h2><div style="margin-bottom:10px">'+segLevels(g,"goal")+'</div>';
+ const buy=costOf(miss),ct=cashTarget(g),cs=cashSaved(),cashLeft=Math.max(0,ct-cs),unk=unknownPrices(miss);
+ h+='<div class="panel"><p class="muted" style="margin:0">Dinero que necesitas para llegar a '+g+' días</p><div class="money-big">'+money(buy+cashLeft)+'</div><table class="mt"><tr><td>Compras pendientes</td><td>'+money(buy)+'</td></tr><tr><td>Efectivo por apartar <span class="muted small">(meta '+money(ct)+', llevas '+money(cs)+')</span></td><td>'+money(cashLeft)+'</td></tr></table>'+(unk.length?'<p class="small muted" style="margin-top:8px">'+unk.length+(unk.length===1?" artículo no tiene":" artículos no tienen")+' precio ('+unk.map(x=>esc(x.it.name)).join(", ")+'). Escríbelo abajo para que el total sea exacto.</p>':"")+'<p class="small muted" style="margin:8px 0 0">Precios aproximados en pesos. Cámbialos por los de tu tienda y todo se recalcula.</p></div>';
+ if(!miss.length){const next=LEVELS[LEVELS.indexOf(g)+1];h+='<div class="panel"><p><b>Tienes todas las compras para '+g+' días.</b>'+(cashLeft?' Solo falta completar el efectivo.':'')+'</p>'+(next?'<button class="btn signal" data-a="goal" data-v="'+next+'">Subir la meta a '+next+' días</button>':'<p class="muted">Ya llegaste a la meta más alta. Mantén y rota.</p>')+'</div>';return h+vCash()+vLevelCosts();}
+ const plan=weekPlan(g),nW=plan.length,cashWeek=nW?Math.ceil(cashLeft/nW):0;
+ h+='<h3>Cómo vas a ir comprando</h3><div class="seg" role="group" aria-label="Modo"><button data-a="planmode" data-v="weeks" aria-pressed="'+(S.planMode!=="budget")+'">En cierto número de semanas</button><button data-a="planmode" data-v="budget" aria-pressed="'+(S.planMode==="budget")+'">Con lo que puedo gastar por semana</button></div>';
+ if(S.planMode==="budget")h+='<label class="f" for="bud">¿Cuánto puedes gastar por semana en compras?</label><div class="row"><span>$</span><input class="inp" id="bud" type="number" inputmode="decimal" min="0" step="50" data-num="budget" value="'+(S.budget||"")+'" placeholder="Ej. 800" style="max-width:160px"></div>';
+ else h+='<div class="seg" style="margin-top:8px" role="group" aria-label="Semanas">'+[1,2,4,8].map(n=>'<button data-a="weeks" data-v="'+n+'" aria-pressed="'+(S.weeks===n)+'">'+(n===1?"Todo de una vez":n+" semanas")+'</button>').join("")+'</div>';
+ if(S.planMode==="budget"&&!(S.budget>0))h+='<p class="small muted" style="margin-top:8px">Escribe una cantidad y te digo en cuántas semanas llegas.</p>';
+ else{const avg=Math.round(buy/nW);h+='<div class="panel" style="background:var(--signal-soft);border-color:var(--signal)"><p style="margin:0">Llegas a '+g+' días en <b>'+nW+(nW===1?" semana":" semanas")+'</b>.</p><p style="margin:4px 0 0">Cada semana: unos <b>'+money(avg)+'</b> en compras'+(cashWeek?' + <b>'+money(cashWeek)+'</b> en efectivo para guardar':'')+'.</p></div>';}
+ h+='<div class="panel flush">'+plan.map((grp,wi)=>{
+  const st=costOf(grp);
+  return (nW>1?'<div class="week-h"><span>Semana '+(wi+1)+'</span><span class="small">Aprox. '+money(st)+(cashWeek?' + '+money(cashWeek)+' efectivo':'')+'</span></div>':"")+'<ul class="list">'+grp.map(x=>{const pv=priceOf(x.it.id);return '<li class="shop-li"><div><div class="item-name">'+esc(x.it.name)+'</div><div class="small muted">'+esc(x.it.pres)+(x.it.note?". "+esc(x.it.note):"")+'</div>'+(x.it.rec?'<div class="small rec">'+esc(x.it.rec)+'</div>':"")+'<div class="small">Comprar: <b>'+fmtN(x.need)+' '+fu(x.need,x.it.unit)+'</b>'+(x.s>0?' <span class="muted">(tienes '+fmtN(x.s)+')</span>':"")+'</div></div><div style="text-align:right"><button class="btn small primary" data-a="bought" data-v="'+x.it.id+'" data-qty="'+x.need+'">Ya lo compré</button></div><label class="price">$<input type="number" inputmode="decimal" min="0" step="any" data-price="'+x.it.id+'" value="'+(pv==null?"":pv)+'" placeholder="?" aria-label="Precio por '+esc(x.it.unit)+'"> por '+esc(x.it.unit)+'</label><span class="small" style="text-align:right">'+(pv?money(pv*x.need):"")+'</span></li>'}).join("")+'</ul>';
+ }).join("")+'</div>';
+ h+='<div class="row wrap"><button class="btn primary" data-a="sharelist">Enviar lista</button><button class="btn" data-a="copylist">Copiar lista</button></div>';
+ return h+vCash()+vLevelCosts();
+}
+function vCash(){
+ const ct=cashTarget(S.goal),cs=cashSaved(),p=ct?Math.min(1,cs/ct):1;
+ return '<h3>Efectivo de emergencia</h3><div class="panel"><p class="small">Si se va la luz, hay un ciberataque o fallan los bancos, no vas a poder pagar con tarjeta ni sacar del cajero. Guarda billetes chicos de 50 y 100 y algunas monedas en un lugar seguro de la casa.</p><label class="f" for="cd">Gasto en efectivo por día para tu familia</label><div class="row"><span>$</span><input class="inp" id="cd" type="number" inputmode="decimal" min="0" step="50" data-cash="daily" value="'+(S.cash.daily||"")+'" style="max-width:160px"><span class="small muted">gasolina, transporte, comida, imprevistos</span></div><label class="f" for="cs">Efectivo que ya tienes guardado</label><div class="row"><span>$</span><input class="inp" id="cs" type="number" inputmode="decimal" min="0" step="50" data-cash="saved" value="'+(S.cash.saved||"")+'" placeholder="0" style="max-width:160px"></div><p style="margin:12px 0 0">Para '+S.goal+' días: <b>'+money(ct)+'</b>. Llevas '+money(cs)+'.</p><div class="bar'+(p<1?" low":"")+'"><i style="width:'+Math.round(p*100)+'%"></i></div></div>';
+}
+function vLevelCosts(){
+ const cs=cashSaved();let prevTotal=0;
+ const rows=LEVELS.map(L=>{const b=costOf(missing(L)),c=Math.max(0,cashTarget(L)-cs),t=b+c;const extra=t-prevTotal;prevTotal=t;return '<tr'+(L===S.goal?' class="cur"':'')+'><td>'+L+' días</td><td>'+money(b)+'</td><td>'+money(c)+'</td><td><b>'+money(t)+'</b></td><td class="muted">'+(L===3?"":"+"+money(extra))+'</td></tr>'}).join("");
+ return '<h3>Cuánto cuesta cada meta</h3><p class="small muted">Desde lo que ya tienes hoy. La última columna es lo que sumas al pasar a la siguiente meta.</p><div class="panel flush" style="overflow-x:auto"><table class="lv"><tr><th>Meta</th><th>Compras</th><th>Efectivo</th><th>Total</th><th>Paso</th></tr>'+rows+'</table></div>';
+}
+
+function vGuias(){
+ let h=topbar();
+ if(ui.guide==="equipo"){
+  const d=S.goal;
+  return h+'<button class="link" data-a="guide" data-v="" style="margin-top:12px">Volver a todas</button><h2>Qué equipo comprar</h2><p class="muted">Todo lo recomendado, con qué fijarte al comprar. Lo marcado como esencial va primero.</p>'+CATS.filter(c=>c[0]!=="otros").map(c=>{const its=CATALOG.filter(i=>i.cat===c[0]&&!(i.needKids&&!nKids())&&!(i.needDiaper&&!nDia())&&!(i.risk&&S.risks[i.risk]===false)).sort((a,b)=>a.prio-b.prio||a.minLvl-b.minLvl);if(!its.length)return "";return '<h3>'+c[1]+'</h3><div class="panel flush"><ul class="list">'+its.map(i=>{const s=stock(i.id),t=target(i,Math.max(d,i.minLvl));return '<li><div class="row between"><span class="item-name grow">'+esc(i.name)+'</span>'+(s>=t&&t>0?'<span class="chip ok">Ya lo tienes</span>':i.prio===1?'<span class="chip soon">Esencial</span>':i.minLvl>3?'<span class="chip">Desde '+i.minLvl+' días</span>':'')+'</div><div class="small muted">'+esc(i.pres)+(t?', cantidad: '+fmtN(t)+' '+fu(t,i.unit):'')+'</div>'+(i.rec||i.note?'<div class="small rec">'+esc(i.rec||i.note)+'</div>':'')+'</li>'}).join("")+'</ul></div>'}).join("");
+ }
+ if(ui.guide){const g=GUIDES.find(x=>x.id===ui.guide);if(g){
+  return h+'<button class="link" data-a="guide" data-v="" style="margin-top:12px">Volver a todas</button><h2>'+esc(g.t)+'</h2><p class="muted">'+esc(g.s)+'</p><div class="panel guide-body">'+g.b.map(([t,items])=>'<h3>'+esc(t)+'</h3><ul>'+items.map(i=>'<li>'+esc(i)+'</li>').join("")+'</ul>').join("")+'</div><a class="btn primary block" href="tel:911">Llamar al 911</a>';
+ }}
+ h+='<h2>Qué hacer</h2><p class="muted">Todo funciona sin internet. Léanlo juntos antes de que se necesite.</p>';
+ h+='<button class="btn signal block" data-a="guide" data-v="equipo" style="margin-bottom:12px">Qué equipo comprar y en qué fijarte</button>';
+ h+='<div class="panel flush">'+GUIDES.map(g=>'<button class="guide-btn" data-a="guide" data-v="'+g.id+'"><b>'+esc(g.t)+'</b><span class="small muted">'+esc(g.s)+'</span></button>').join("")+'</div>';
+ return h;
+}
+
+function vPlan(){
+ const P=S.plan;
+ let h=topbar()+'<h2>Tu hogar</h2><div class="panel"><div class="row between"><span class="item-name">Adultos</span><div class="stepper"><button data-a="adults" data-v="-1" aria-label="Quitar adulto">−</button><span>'+nAd()+'</span><button data-a="adults" data-v="1" aria-label="Agregar adulto">+</button></div></div>';
+ h+='<div class="item-name" style="margin-top:16px">Niños</div>'+S.house.kids.map((k,i)=>'<div class="kid"><input class="inp" placeholder="Nombre (opcional)" value="'+esc(k.name)+'" data-kid="'+i+'" data-f="name" aria-label="Nombre"><input class="inp" type="number" min="0" max="17" value="'+esc(k.age)+'" data-kid="'+i+'" data-f="age" aria-label="Edad"><label class="toggle"><input type="checkbox" data-kid="'+i+'" data-f="diaper"'+(k.diaper?" checked":"")+'>Pañal</label><button class="btn small" data-a="delkid" data-v="'+i+'" aria-label="Quitar">Quitar</button></div>').join("")+'<button class="btn small" style="margin-top:10px" data-a="addkid">Agregar niño</button><p class="hint">Edad en años. Esto ajusta todas las cantidades de la app.</p></div>';
+ h+='<h2>Riesgos de tu zona</h2><p class="muted small">Quita los que no apliquen y la lista de compras se ajusta.</p><div class="panel flush">'+RISKS.map(([k,l])=>'<label class="check"><input type="checkbox" data-risk="'+k+'"'+(S.risks[k]!==false?" checked":"")+'><span>'+l+'</span></label>').join("")+'</div>';
+ h+='<h2>Contactos de emergencia</h2><div class="panel flush"><ul class="list"><li class="row between"><div><div class="item-name">Emergencias</div><div class="small muted">911</div></div><a class="btn small primary" href="tel:911">Llamar</a></li>'+P.contacts.map((c,i)=>'<li class="row between"><div class="grow"><div class="item-name">'+esc(c.name)+'</div><div class="small muted">'+esc(c.rel)+(c.rel?", ":"")+esc(c.phone)+'</div></div><div class="row"><a class="btn small primary" href="tel:'+esc(String(c.phone).replace(/[^\d+]/g,""))+'">Llamar</a><button class="btn small" data-a="delcontact" data-v="'+i+'">Quitar</button></div></li>').join("")+'</ul><div style="padding:12px 16px;border-top:1px solid var(--line)"><div class="row wrap"><input class="inp grow" id="cName" placeholder="Nombre" style="min-width:140px"><input class="inp grow" id="cPhone" type="tel" placeholder="Teléfono" style="min-width:120px"></div><input class="inp" id="cRel" placeholder="Relación (abuela, vecino, pediatra...)" style="margin-top:8px"><button class="btn" style="margin-top:8px" data-a="addcontact">Agregar contacto</button></div></div>';
+ h+='<h2>Dónde nos vemos</h2><div class="panel"><label class="f" for="m1">Punto de reunión cerca de casa</label><input class="inp" id="m1" data-bind="meet1" value="'+esc(P.meet1)+'" placeholder="Ej. la esquina del parque"><label class="f" for="m2">Punto fuera de la colonia</label><input class="inp" id="m2" data-bind="meet2" value="'+esc(P.meet2)+'" placeholder="Ej. casa de los abuelos"><label class="f" for="m3">Contacto fuera de la ciudad</label><input class="inp" id="m3" data-bind="outOfTown" value="'+esc(P.outOfTown)+'" placeholder="Quien centraliza noticias de todos"><label class="f" for="m4">Información médica de la familia</label><textarea class="inp" id="m4" data-bind="medical" placeholder="Alergias, medicamentos, tipo de sangre, pediatra">'+esc(P.medical)+'</textarea><p class="hint">Se guarda solo en este teléfono.</p></div>';
+ h+=vBagDocs();
+ for(const [k,c] of Object.entries(CHECKS)){const done=c.i.filter((_,j)=>P.checks[k+":"+j]).length;
+  h+='<h2>'+c.t+'</h2><p class="muted small">'+c.s+' '+done+' de '+c.i.length+' listos.</p><div class="panel flush">'+c.i.map((t,j)=>'<label class="check"><input type="checkbox" data-check="'+k+":"+j+'"'+(P.checks[k+":"+j]?" checked":"")+'><span>'+esc(t)+'</span></label>').join("")+'</div>';}
+ h+='<h2>Compartir con la familia</h2><div class="panel"><p>Cada teléfono guarda su propia copia. Para pasar todo a otro teléfono, envía el respaldo por WhatsApp y ábrelo con Importar en el otro teléfono.</p><div class="row wrap"><button class="btn primary" data-a="export">Enviar respaldo</button><label class="btn">Importar respaldo<input type="file" accept="application/json,.json" id="importFile" hidden></label></div><p class="hint">Importar reemplaza lo que hay en este teléfono.</p></div>';
+ h+='<div class="panel"><button class="btn danger" data-a="reset">Borrar todo</button></div>';
+ return h;
+}
+
+const VIEWS={inicio:vInicio,despensa:vDespensa,compras:vCompras,guias:vGuias,plan:vPlan};
+function render(keepScroll){const y=window.scrollY;document.getElementById("main").innerHTML=VIEWS[ui.tab]();renderNav();if(ui.anchor){const a=document.getElementById(ui.anchor);ui.anchor=null;if(a&&a.scrollIntoView){a.scrollIntoView();return}}if(keepScroll)window.scrollTo(0,y);else window.scrollTo(0,0)}
+
+/* ---------- Hoja para agregar / editar ---------- */
+function openSheet(opts){
+ opts=opts||{};const editing=opts.index!=null;const b=editing?S.inv[opts.index]:{item:opts.item||"agua",qty:opts.qty||"",exp:"",loc:"",name:"",unit:""};
+ const sel='<select class="inp" id="fItem">'+CATS.filter(c=>c[0]!=="otros").map(c=>'<optgroup label="'+c[1]+'">'+CATALOG.filter(i=>i.cat===c[0]).map(i=>'<option value="'+i.id+'"'+(b.item===i.id?" selected":"")+'>'+esc(i.name)+'</option>').join("")+'</optgroup>').join("")+'<optgroup label="Otros"><option value="custom"'+(b.item==="custom"?" selected":"")+'>Otro artículo</option></optgroup></select>';
+ const html='<div class="sheet-bg" data-a="close"><div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sh-t"><h2 id="sh-t">'+(editing?"Editar":opts.bought?"Registrar compra":"Agregar a la despensa")+'</h2>'+
+ '<label class="f" for="fItem">Artículo</label>'+sel+'<div id="fHint" class="hint"></div>'+
+ '<div id="fCustom" hidden><label class="f" for="fName">Nombre</label><input class="inp" id="fName" value="'+esc(b.name)+'" placeholder="Ej. Galletas de arroz"><label class="f" for="fUnit">Unidad</label><input class="inp" id="fUnit" value="'+esc(b.unit||"pieza")+'" placeholder="pieza, lata, caja..."></div>'+
+ '<label class="f" for="fQty">Cantidad <span id="fUnitLbl" class="muted"></span></label><input class="inp" id="fQty" type="number" inputmode="decimal" min="0" step="any" value="'+esc(b.qty)+'">'+
+ '<label class="f" for="fExp">Fecha de caducidad</label><input class="inp" id="fExp" type="date" value="'+esc(b.exp)+'"><div class="hint" id="fExpHint"></div>'+
+ '<label class="f" for="fLoc">Dónde está guardado</label><input class="inp" id="fLoc" list="locs" value="'+esc(b.loc)+'" placeholder="Alacena, cochera, mochila..."><datalist id="locs"><option value="Alacena"><option value="Cochera"><option value="Mochila de emergencia"><option value="Clóset"><option value="Auto"></datalist>'+
+ '<div class="row wrap" style="margin-top:18px"><button class="btn primary grow" data-a="saveitem">Guardar</button><button class="btn" data-a="close">Cancelar</button>'+(editing?'<button class="btn danger" data-a="delitem">Eliminar</button>':"")+'</div></div></div>';
+ const layer=document.getElementById("layer");layer.innerHTML=html;layer.dataset.index=editing?opts.index:"";
+ const fItem=document.getElementById("fItem"),fExp=document.getElementById("fExp");let expTouched=!!b.exp;
+ fExp.addEventListener("input",()=>{expTouched=true});
+ const sync=()=>{const id=fItem.value,it=BY_ID[id];document.getElementById("fCustom").hidden=id!=="custom";
+  document.getElementById("fUnitLbl").textContent=it?"("+fu(2,it.unit)+")":"";
+  document.getElementById("fHint").textContent=it?it.pres+(it.note?". "+it.note:"")+(it.rec?" "+it.rec:""):"";
+  const eh=document.getElementById("fExpHint");
+  if(it&&it.shelf){eh.textContent="Revisa la fecha en el empaque. Si no la tiene, se sugiere una aproximada.";if(!expTouched){const d=today0();d.setDate(d.getDate()+Math.round(it.shelf*30.4));fExp.value=isoD(d)}}
+  else{eh.textContent="Déjala vacía si no caduca.";if(!expTouched)fExp.value=""}};
+ fItem.addEventListener("change",sync);sync();
+ setTimeout(()=>document.getElementById("fQty").focus(),50);
+}
+function closeSheet(){document.getElementById("layer").innerHTML=""}
+function saveItem(){
+ const layer=document.getElementById("layer"),idx=layer.dataset.index;
+ const item=document.getElementById("fItem").value,qty=Number(document.getElementById("fQty").value);
+ if(!(qty>0)){toast("Escribe una cantidad mayor a cero.");return}
+ const rec={item,qty,exp:document.getElementById("fExp").value||"",loc:document.getElementById("fLoc").value.trim(),added:isoD(new Date())};
+ if(item==="custom"){rec.name=document.getElementById("fName").value.trim();rec.unit=document.getElementById("fUnit").value.trim()||"pieza";if(!rec.name){toast("Escribe el nombre del artículo.");return}}
+ if(idx!==""){S.inv[Number(idx)]=Object.assign(S.inv[Number(idx)],rec)}else S.inv.push(rec);
+ save();closeSheet();render(true);toast(idx!==""?"Cambios guardados.":"Agregado a la despensa.");
+}
+
+/* ---------- Lista para compartir ---------- */
+function listText(){
+ const plan=weekPlan(S.goal);
+ let t="Lista de emergencia para "+S.goal+" días\n";
+ plan.forEach((grp,i)=>{t+=plan.length>1?"\nSemana "+(i+1)+" (aprox. "+money(costOf(grp))+")\n":"\n";grp.forEach(x=>{t+="- "+x.it.name+" ("+x.it.pres+"): "+fmtN(x.need)+" "+fu(x.need,x.it.unit)+"\n"})});
+ const cl=Math.max(0,cashTarget(S.goal)-cashSaved());if(cl)t+="\nEfectivo por apartar: "+money(cl)+"\n";
+ return t;
+}
+async function copyText(t){try{await navigator.clipboard.writeText(t);toast("Lista copiada.")}catch(e){const ta=document.createElement("textarea");ta.value=t;document.body.appendChild(ta);ta.select();try{document.execCommand("copy");toast("Lista copiada.")}catch(_){toast("No se pudo copiar.")}ta.remove()}}
+
+/* ---------- Respaldo ---------- */
+async function exportData(){
+ const blob=new Blob([JSON.stringify(S,null,1)],{type:"application/json"});
+ const name="listos-respaldo-"+isoD(new Date())+".json";
+ try{const file=new File([blob],name,{type:"application/json"});if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title:"Respaldo de Listos"});return}}catch(e){if(e&&e.name==="AbortError")return}
+ const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500);toast("Respaldo descargado.");
+}
+function importData(file){
+ const r=new FileReader();
+ r.onload=()=>{try{const d=JSON.parse(r.result);if(!d||!Array.isArray(d.inv))throw 0;if(!confirm("Esto reemplaza lo que hay en este teléfono. ¿Continuar?"))return;S=normalize(d);save();render();toast("Respaldo importado.")}catch(e){toast("El archivo no es un respaldo de Listos.")}};
+ r.readAsText(file);
+}
+
+/* ---------- Eventos ---------- */
+document.addEventListener("click",async e=>{
+ const el=e.target.closest("[data-a]");if(!el)return;
+ const a=el.dataset.a,v=el.dataset.v;
+ if(a==="close"){if(e.target===el||el.tagName==="BUTTON")closeSheet();return}
+ switch(a){
+  case "tab":ui.tab=v;if(v!=="guias")ui.guide=null;render();break;
+  case "goal":S.goal=Number(v);save();render(true);break;
+  case "weeks":S.weeks=Number(v);save();render(true);break;
+  case "goto":ui.tab="plan";ui.anchor=v;render();break;
+  case "planmode":S.planMode=v;save();render(true);break;
+  case "filter":ui.filter=v;render(true);break;
+  case "guide":ui.tab="guias";ui.guide=v||null;render();break;
+  case "add":openSheet({item:el.dataset.item,qty:el.dataset.qty});break;
+  case "bought":openSheet({item:v,qty:el.dataset.qty,bought:true});break;
+  case "edit":openSheet({index:Number(v)});break;
+  case "saveitem":saveItem();break;
+  case "delitem":{const i=Number(document.getElementById("layer").dataset.index);if(confirm("¿Eliminar este artículo?")){S.inv.splice(i,1);save();closeSheet();render(true);toast("Eliminado.")}break}
+  case "used":S.inv.splice(Number(v),1);save();render(true);toast("Listo. Ya aparece en tu lista de compras.");break;
+  case "maint":S.maint[v]=isoD(new Date());save();render(true);toast("Marcado como hecho.");break;
+  case "adults":S.house.adults=Math.max(0,Math.min(12,nAd()+Number(v)));save();render(true);break;
+  case "addkid":S.house.kids.push({name:"",age:1,diaper:true});save();render(true);break;
+  case "delkid":S.house.kids.splice(Number(v),1);save();render(true);break;
+  case "addcontact":{const n=document.getElementById("cName").value.trim(),p=document.getElementById("cPhone").value.trim(),r=document.getElementById("cRel").value.trim();if(!n||!p){toast("Escribe nombre y teléfono.");break}S.plan.contacts.push({name:n,phone:p,rel:r});save();render(true);break}
+  case "delcontact":S.plan.contacts.splice(Number(v),1);save();render(true);break;
+  case "copylist":copyText(listText());break;
+  case "sharelist":{const t=listText();if(navigator.share){try{await navigator.share({text:t})}catch(_){}}else copyText(t);break}
+  case "export":exportData();break;
+  case "reset":if(confirm("Se borrará toda la información de este teléfono. ¿Continuar?")){S=normalize(null);save();render();toast("Información borrada.")}break;
+ }
+});
+document.addEventListener("change",e=>{
+ const t=e.target;
+ if(t.dataset.price){if(t.value==="")delete S.prices[t.dataset.price];else S.prices[t.dataset.price]=Number(t.value)||0;save();render(true);return}
+ if(t.dataset.num){S[t.dataset.num]=Math.max(0,Number(t.value)||0);save();render(true);return}
+ if(t.dataset.cash){S.cash[t.dataset.cash]=Math.max(0,Number(t.value)||0);save();render(true);return}
+ if(t.dataset.risk){S.risks[t.dataset.risk]=t.checked;save();render(true);return}
+ if(t.dataset.check){S.plan.checks[t.dataset.check]=t.checked;save();render(true);return}
+ if(t.dataset.bind){S.plan[t.dataset.bind]=t.value;save();return}
+ if(t.dataset.kid!=null){const k=S.house.kids[Number(t.dataset.kid)];if(!k)return;const f=t.dataset.f;k[f]=f==="diaper"?t.checked:f==="age"?Math.max(0,Math.min(17,Number(t.value)||0)):t.value;save();if(f!=="name")render(true);return}
+ if(t.id==="importFile"&&t.files&&t.files[0]){importData(t.files[0]);t.value=""}
+});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&document.querySelector(".sheet"))closeSheet()});
+
+render();
+if("serviceWorker" in navigator&&location.protocol.startsWith("http")){navigator.serviceWorker.register("sw.js").catch(()=>{})}
+</script>
+</body>
+</html>
